@@ -1,0 +1,91 @@
+@article{borsottiFastGLRParsers2021a,
+  title = {Fast {{GLR}} Parsers for Extended {{BNF}} Grammars and Transition Networks},
+  author = {Borsotti, Angelo and Breveglieri, Luca and Crespi Reghizzi, Stefano and Morzenti, Angelo},
+  year = {2021},
+  month = jun,
+  journal = {Journal of Computer Languages},
+  volume = {64},
+  pages = {101035},
+  issn = {2590-1184},
+  doi = {10.1016/j.cola.2021.101035},
+  url = {https://www.sciencedirect.com/science/article/pii/S2590118421000149},
+  urldate = {2023-10-27},
+  abstract = {The Tomita's Generalized LR(1) parsing algorithm (GLR), later improved in many ways, runs in a linear time on LR(1) grammars, and degrades to a polynomial-time bound if the grammar is not deterministic. We address a useful feature not present in the current GLR(1) methods: the ability to accept grammars of the Extended BNF type (EBNF), the rules of which contain regular expressions. An EBNF grammar is conveniently represented by a collection of finite automata called a Transition Net (TN). We define, analyze and evaluate a new GLR(1) algorithm, called GELR, that combines the recent LR(1) parsing algorithm for TNs with the classical GLR data structures: the Graph-Structured Stack representing multiple stacks, and the Shared Packed Parse Forest for multiple syntax trees. The GELR algorithm is proved correct and an efficient implementation incorporating the state-of-the-art Right-Nulled parsing optimization is available. Experimental measures of the GELR parser size, speed and memory footprint are reported for current programming and web languages, and are compared with those of other parsing algorithms. The findings prove that directly parsing EBNF grammars does not penalize speed. Performance comparisons for different computer languages should also be of interest.},
+  keywords = {GLR parsing,Graph-structured stack,GSS,Infinite ambiguity,Parser performance comparison,Regular right-hand side grammar,Shared packed parse forest,SPPF},
+  file = {/home/janek/Zotero/storage/WJW2ZMFP/Borsotti et al. - 2021 - Fast GLR parsers for extended BNF grammars and tra.pdf;/home/janek/Zotero/storage/M97BT8M5/S2590118421000149.html}
+}
+
+@inproceedings{langDeterministicTechniquesEfficient1974,
+  title = {Deterministic {{Techniques}} for {{Efficient Non-Deterministic Parsers}}},
+  booktitle = {Lecture {{Notes}} in {{Computer Science}}},
+  author = {Lang, Bernard},
+  year = {1974},
+  month = jul,
+  volume = {14},
+  pages = {255--269},
+  doi = {10.1007/3-540-06841-4_65},
+  abstract = {A general study of parallel non-deterministic parsing and translation {\`a} la Earley is developped formally, based on non-deterministic pushdown acceptor-transducers. Several results (complexity and efficiency) are established, some new and other previously proved only in special cases. As an application, we show that for every family of deterministic context-free pushdown parsers (e.g. precedence, LR(k), LL(k), ...) there is a family of general context-free parallel parsers that have the same efficiency in most practical cases (e.g. analysis of programming languages).},
+  isbn = {978-3-540-06841-9},
+  file = {/home/janek/Zotero/storage/N9KAEASK/Lang - 1974 - Deterministic Techniques for Efficient Non-Determi.pdf}
+}
+
+@misc{loopTreesitterNewParsing,
+  title = {Tree-Sitter - a New Parsing System for Programming Tools - {{Strange Loop}}},
+  author = {Loop, Strange},
+  url = {https://www.thestrangeloop.com/2018/tree-sitter---a-new-parsing-system-for-programming-tools.html},
+  urldate = {2023-12-06},
+  abstract = {Strange Loop is a conference for software developers covering programming langs, databases, distributed systems, security, machine learning, creativity, and more!},
+  langid = {english},
+  file = {/home/janek/Zotero/storage/UULR3ZW3/tree-sitter---a-new-parsing-system-for-programming-tools.html}
+}
+
+@article{sanderDesignImplementationLanguage,
+  title = {Design and {{Implementation}} of the {{Language Server Protocol}} for the {{Nickel Language}}},
+  author = {Sander, Yannik},
+  abstract = {The expansive Language Integration, i.e. code completion, debugging as well as static code analysis, refactoring and more, has typically been the hallmark of Integrated Development Environments (IDE). Typical IDEs however focus on a selection of established languages to integrate which stifles the adoption of new languages. Contrasting IDEs, modular text editors allow for plugin driven integration of languages as contributed by their respective communities. Yet, providing language integration to multiple platforms requires repeated efforts for each one. The Language Server Protocol aims to be a solution to this problem by connecting a language specific Language Server to editors which act as generic clients. This work presents the design of a transferable Language Server architecture and its implementation for the Nickel languages. The product is finally evaluated quantitatively for its performance and qualitatively for its perception by future users.},
+  langid = {english},
+  file = {/home/janek/Zotero/storage/FEJ2TD3U/Sander - Design and Implementation of the Language Server P.pdf}
+}
+
+@misc{TreesitterIntroduction,
+  title = {Tree-sitter｜{{Introduction}}},
+  url = {https://tree-sitter.github.io/tree-sitter/},
+  urldate = {2023-12-06},
+  file = {/home/janek/Zotero/storage/PXPIMEBY/tree-sitter.html}
+}
+
+@inproceedings{vanwykContextawareScanningParsing2007,
+  title = {Context-Aware Scanning for Parsing Extensible Languages},
+  booktitle = {Proceedings of the 6th International Conference on {{Generative}} Programming and Component Engineering},
+  author = {Van Wyk, Eric R. and Schwerdfeger, August C.},
+  year = {2007},
+  month = oct,
+  pages = {63--72},
+  publisher = {{ACM}},
+  address = {{Salzburg Austria}},
+  doi = {10.1145/1289971.1289983},
+  url = {https://dl.acm.org/doi/10.1145/1289971.1289983},
+  urldate = {2023-10-25},
+  abstract = {This paper introduces new parsing and context-aware scanning algorithms in which the scanner uses contextual information to disambiguate lexical syntax. The parser uses a slightly modified LRstyle algorithm that passes to the scanner the set of valid symbols that the scanner may return at that point in parsing. This set is those terminals whose entries in the parse table for the current parse state are shift, reduce, or accept, but not error. The scanner then only returns tokens in this set. An analysis is given that can statically verify that the scanner will never return more than one token for a single input. Context-aware scanning is especially useful when parsing and scanning extensible languages in which domain specific languages can be embedded. It has been used in extensible versions of Java 1.4 and ANSI C. We illustrate this approach with a declarative specification of a subset of Java and extensions that embed SQL queries and Boolean expression tables into Java.},
+  isbn = {978-1-59593-855-8},
+  langid = {english},
+  file = {/home/janek/Zotero/storage/VX7F8RDT/Van Wyk and Schwerdfeger - 2007 - Context-aware scanning for parsing extensible lang.pdf}
+}
+
+@article{wagnerEfficientFlexibleIncremental1998,
+  title = {Efficient and Flexible Incremental Parsing},
+  author = {Wagner, Tim A. and Graham, Susan L.},
+  year = {1998},
+  month = sep,
+  journal = {ACM Transactions on Programming Languages and Systems},
+  volume = {20},
+  number = {5},
+  pages = {980--1013},
+  issn = {0164-0925, 1558-4593},
+  doi = {10.1145/293677.293678},
+  url = {https://dl.acm.org/doi/10.1145/293677.293678},
+  urldate = {2023-11-21},
+  abstract = {Previously published algorithms for LR (               k               ) incremental parsing are inefficient, unnecessarily restrictive, and in some cases incorrect. We present a simple algorithm based on parsing LR(               k               ) sentential forms that can incrementally parse an arbitrary number of textual and/or structural modifications in optimal time and with no storage overhead. The central role of               balanced sequences               in achieving truly incremental behavior from analysis algorithms is described, along with automated methods to support balancing during parse table generation and parsing. Our approach extends the theory of sentential-form parsing to allow for               ambiguity               in the grammar, exploiting it for notational convenience, to denote sequences, and to  construct compact (``abstract'') syntax trees directly. Combined, these techniques make the use of automatically generated incremental parsers in interactive software development environments both practical and effective. In addition, we address               information preservation               in these environments: Optimal node reuse is defined; previous definitions are shown to be insufficient; and a method for detecting node reuse is provided that is both simpler and faster than existing techniques. A program representation based on               self-versioning documents               is used to detect changes in the program, generate efficient change reports for subsequent analyses, and allow the parsing transformation itself to be treated as a reversible modification in the edit log.},
+  langid = {english},
+  file = {/home/janek/Zotero/storage/A259DPD9/Wagner and Graham - 1998 - Efficient and flexible incremental parsing.pdf}
+}
