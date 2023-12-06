@@ -9,8 +9,6 @@
   // Set paragraph spacing.
   show par: set block(above: 1.2em, below: 1.2em)
 
-  set par(leading: 0.625em) // <- Should be 5 Pages. (.5 to .75)
-
   // Title row.
   align(center)[
     #block(text(weight: 700, 1.75em, title))
