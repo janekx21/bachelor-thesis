@@ -22,14 +22,14 @@
   ]
 
   // Author information.
-  pad(top: 0.8em, bottom: 0.8em, x: 2em, grid(
-    columns: (1fr,) * calc.min(3, authors.len()),
-    gutter: 1em,
-    ..authors.map(author => align(center)[
-      *#author.name* \
-      #author.email
-    ]),
-  ))
+  pad(
+    top: 0.8em, bottom: 0.8em, x: 2em, grid(
+      columns: (1fr,) * calc.min(3, authors.len()), gutter: 1em, ..authors.map(author => align(center)[
+        *#author.name* \
+        #author.email
+      ]),
+    ),
+  )
 
   // Numbering of Headings for References.
   set heading(numbering: "1.")
@@ -41,6 +41,16 @@
 
   // Main body.
   set par(justify: true)
+
+  show raw: it => if it.block {
+    block(
+      fill: rgb("#f5f5f5"), inset: 4pt, outset: 2pt, radius: 4pt, breakable: false, width: 100%, text(it),
+    )
+  } else {
+    box(
+      fill: rgb("#f5f5f5"), outset: (x: 0pt, y: 2pt), inset: (x: 2pt, y: 0pt), radius: 2pt, text(it),
+    )
+  }
 
   body
 }

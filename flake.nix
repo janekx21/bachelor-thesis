@@ -16,7 +16,7 @@
           packages = with pkgs; [ 
             typst
             typst-lsp
-            typst-fmt
+            typstfmt
           ];
         };
       });
