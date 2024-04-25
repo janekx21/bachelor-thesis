@@ -160,13 +160,27 @@ results in the S-expression (See @how_to_read_s_expression for how to read them)
 ```
 
 You can see that the first class frame contains a syntax error. The second class
-frame is valid, and that the parser can pick up parsing after the erroneous
-first frame.
+frame is valid, and the parser can pick up parsing after the erroneous first
+frame. Without this error recovery, the source code after a syntax error would
+not be checked for errors or would become invalid to. It would be impossible to
+show all syntax error in a file.
 
 // Rust bindings
 Tree sitter comes with rust bindings but also supports a number of programming
 languages. I chose rust and there is no language that could offer me the safety,
-speed and comfort it provides.
+speed and comfort it provides. Some notable alternatives are typescript and c++.
+I choose rust over typescript, because of performance. Rust compiles to machine
+code and runs without a garbage collector while typescript first gets transpiled
+into javascript and the program would run on a "virtual machine" like javascript
+engine - e.g. V8. Modern javascript engines are fast enough and this language
+server could be ported. C++ on the other hand is very fast but lacks the safety
+and comfort. This is not a strict requirement, and it would be a viable
+implementation language for this language server. More about that in
+@rust_over_cpp. But the rust bindings, cargo package manager and memory safety
+are excellent and guaranteed an efficient implementation. In hindsight, it was a
+good choice and I recommend rust for writing language servers.
+
+// TODO reference rust book, typescript and c++ stuff
 
 I came across tree sitter when I was researching what my own text editor uses
 for its syntax highlighting. It turned out that the editor Helix also uses tree
@@ -203,6 +217,29 @@ into
 ontology_document: $ => seq(repeat($.prefix_declaration), $.ontology),
 ```
 
+Tree sitter rules are always read from the `$` object and named in snake case.
+Some are prefixed with `_`. We call theses "hidden rules". We call rules that
+are not prefixed "named rules" and we call terminals symbols, literals and
+regular expressions "anonymous rules". For example the rule
+
+```javascript
+_frame: $ =>
+  choice(
+    $.datatype_frame,
+    $.class_frame,
+    $.object_property_frame,
+    $.data_property_frame,
+    $.annotation_property_frame,
+    $.individual_frame,
+    $.misc,
+)
+```
+
+is a hidden rule, because `_frame` is a supertype of `class_frame`. These rules
+are hidden because they add substantial depth and noise to the syntax tree.
+
+// TODO reference https://tree-sitter.github.io/tree-sitter/creating-parsers#hiding-rules
+
 The exact transformations where done as following:
 
 #table(
@@ -210,17 +247,17 @@ The exact transformations where done as following:
   // ---------------------
   [sequence], [```'{' literalList '}'```], [```js seq('{', $.literal_list, '}')```],
   // ---------------------
-  [non-terminal symbols], [`ClassExpression`], [```js $class_expression```],
+  [non-terminal symbols], [`ClassExpression`], [```js $.class_expression```],
   // ---------------------
   [terminal symbols], [```'PropertyRange'```], [```js 'PropertyRange'```],
   // ---------------------
-  [zero or more], [```{ ClassExpression }```], [```js repeat($class_exprresion)```],
+  [zero or more], [```{ ClassExpression }```], [```js repeat($.class_exprresion)```],
   // ---------------------
-  [zero or one], [```[ ClassExpression ]```], [```js optional($class_expression)```],
+  [zero or one], [```[ ClassExpression ]```], [```js optional($.class_expression)```],
   // ---------------------
-  [alternative], [`Assertion | Declaration`], [```js choice($assertion, $declaration)```],
+  [alternative], [`Assertion | Declaration`], [```js choice($.assertion, $.declaration)```],
   // ---------------------
-  [grouping], [```( restriction | atomic )```], [```js choice($restriction, $atomic)```],
+  [grouping], [```( restriction | atomic )```], [```js choice($.restriction, $.atomic)```],
 )
 
 I also, in a second step, transformed typical BNF constructs into more readable
@@ -240,7 +277,7 @@ tree sitter rules. These include
 
 Where `<NT>` is a non-terminal and `a` is the non-terminal called `annotations`.
 This is used for `<NT>List`, `<NT>2List`, `<NT>AnnotatedList` and every
-derivative that replaces <NT> with a real non-terminal.
+derivative that replaces `<NT>` with a real non-terminal.
 
 This results in the following example transformation:
 
@@ -261,7 +298,6 @@ specification for the IRI and put in some regexs that worked for me but not
 necessarily for you. For example the IRI specification defines many small
 non-terminals like// TODO write more
 
-// TODO using underscore in rules names
 // TODO i wrote tests to check that the parsing is correct
 
 I wrote tests to see if my grammar and the resulting parser would produce the
@@ -270,13 +306,14 @@ CLI. More about tree sitter query testing in @query-tests.
 
 === Using the generated parser
 
-=== Why use rust and not c or c++
+=== Why use rust and not c or c++ <rust_over_cpp>
 
 // TODO
 - memory safety
 - pointers
 - compile time
 - ease of use
+- arithmetic type system
 
 // https://www.educative.io/blog/rust-vs-cpp#compare
 
