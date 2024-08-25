@@ -54,3 +54,8 @@
 
   body
 }
+
+#let lorem-old = lorem
+
+#let lorem(n) = text(fill: gray)[#lorem-old(n)]
+
