@@ -1,21 +1,26 @@
-on: push
+on: 
+  push:
+    tags:
+    - '*'
+
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       
-      - name: Compile Typst documents
+      - name: Compile Document
         uses: Jarivanbakel/typst-action@v3
         with:
           input_files: main.typ
           
-      - name: Upload a Document
+      - name: Upload Document
         uses: actions/upload-artifact@v3.1.3
         with:
           name: thesis.pdf
           path: main.pdf
           
-      - uses: ncipollo/release-action@v1
+      - name: Release Document
+        uses: ncipollo/release-action@v1
         with:
           artifacts: "main.pdf"
