@@ -9,14 +9,14 @@
 // optional: date to specify your deadline (default: datetime.today())
 // optional: lang to specify the language for text features like "" or hyphenation (specify as ISO 639-1/2/3 code, default: "en")
 #show: project.with(
-  "Design and development of an OWL 2 manchester syntax language server", (name: "Janek Winkler", mail: "janek.winkler@st.ovgu.de"), include "chapters/abstract.typ", thesis-type: "Bachelor", reviewers: ("Prof. Dr. Musterfrau", "Prof. Dr. Mustermann", "Dr. Evil"),
+  "Design and development of an OWL 2 manchester syntax language server", (name: "Janek Winkler", mail: "janek.winkler@st.ovgu.de"), include "chapters/abstract.typ", thesis-type: "Bachelor", reviewers: ("Prof. Dr. Musterfrau", "Prof. Dr. Mustermann", "Dr. Evil",),
 )
 
 // Set lower roman numbering for ToC and abstract.
 #set page(margin: 2.5cm, footer: none)
 #outline(depth: 3)
 
-#empty-page
+// #empty-page
 
 // Set arabic numbering for everything else and reset page counter.
 #set page(numbering: "1", footer: context{
@@ -36,15 +36,15 @@
 
 // --------------------------------- //
 
-#empty-page
+// #empty-page
 
 // #parcio-bib("lib.bib", style: "bibliography/apalike.csl", enable-backrefs: true)
-#bibliography("lib.bib")
+// #bibliography("lib.bib")
 
 #empty-page
 
-#include "appendix.typ"
+#include "chapters/appendix.typ"
 
 #empty-page
 
-#include "legal.typ"
+#include "chapters/legal.typ"

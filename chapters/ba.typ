@@ -1,6 +1,6 @@
 // #import "template.typ": *
 #import "@preview/cetz:0.2.2": canvas, draw, tree
-#import "../template/template.typ": todo, section, parcio-table, j-table
+#import "../template/template.typ": todo, section, parcio-table, j-table, empty-page
 
 // #show: project.with(
 //   title: "Design and development of an OWL 2 manchester syntax language server", authors: ((name: "Janek Winkler", email: "janek.winkler@st.ovgu.de"),), date: "December 6, 2023", topleft: [
@@ -21,34 +21,142 @@
 // #pagebreak()
 
 = Introduction
+#todo(inline: true)[TODO schreiben]
 
-== The Research Objective
+== Motivation
+#todo(inline: true)[TODO schreiben]
+
+== Problem Definition
+
+The problem that is thesis will address is the current lack of text tooling for
+the OWL community.
+#todo(inline: true)[
+  TODO schreiben
+
+  was ist das problem? Keine tools oder kein wissen?
+]
+
+== Research Objective
 
 // How to design and implement an efficient language server for the owl language
 
-The aim of my research is to find out how best to implement a language server
-for a language that is unknown to the author. Which data structures, techniques
-and protocols are best suited, and what are performance characteristics of
-different alternatives?
+To aid future developers of language server for small scale languages this
+thesis will answer the following research questions while documenting which data
+structures, techniques and protocols are best suited, and the performance
+characteristics of different alternatives. #todo[Ob das noch in die Arbeit passt?]
 
-== The Structure of the Thesis
+#show figure.where(kind: "RQ"): it => box(width: 100%)[
+  #it.body
+]
+
+#figure(
+  kind: "RQ", supplement: "RQ", numbering: "1",
+)[
+  #grid(
+    columns: (auto, auto), gutter: 2pt, [*RQ 1:*], [How to develop a language server for a known lanugage that satifies the user in
+      need for features while not slowing him down?],
+  )
+]<rq_1>
+
+#figure(
+  kind: "RQ", supplement: "RQ", numbering: "1",
+)[
+  *RQ 2:* How does a text editor with a language server compare to a specialised
+  editor.
+]<rq_2>
+
+The goal of this research is to create a reference implementation for a language
+server that has a known grammar. The research is conducted on an open source
+language server for the open source semantic web language "OWL 2 Manchester
+Syntax"@OWLWebOntologya. The language server will provide diagnostics, hover,
+semantic tokens and jump to definition features. A small qualitative user study
+will show whether the implementation is able to keep up with the users
+expectations in a synthetic scenario. It should be fast enough and feature rich
+to work with. The scenario can not be a real-world one, because the chosen
+language does not have an established text based workflow yet. Not to the
+knowledge of this author.
+
+== Non-Goals
+
+This implementation is specific to the OWL language. The grammar covers the
+complete Manchester Syntax but without extensions and limits in dependent
+syntaxes like RFC-3629@rfc-3629. In addition, only a small subset of possible
+language features is implemented, because of time constrains. It is not my goal
+to create a full OWL language server tool that covers every use case. For that
+reason a prioritized list with LSP features guided the implementation order.
+
+1. Document Synchronization
+2. Diagnostics (Just syntax)
+3. Semantic Tokens (Just syntax highlighting)
+4. Inlay hints (For resolving IRI's)
+5. Hover
+6. Go to definition
+7. Auto-completion (Keywords and IRI's)
+8. Document symbols
+9. Rename
+10. Go to references
+
+Working with multiple files or workspaces as well as the following features and
+there "work done progress" variation where explicitly not planned. The features
+Go to declaration, go to type definition, go to implementation, incoming calls,
+outgoing calls, super-types, subtypes, document highlight (Highlights text that
+corresponds to text under the cursor), document link (All links in a document),
+document link resolve (How to resolve a link), code lens, folding range,
+selection range, semantic tokens, inline value, moniker, workspace diagnostic,
+signature help, document color, color presentation, formatting, on type
+formatting, linked editing range (Ranges that have the same content) and Symbol
+(Project-wide symbol search) where not planned.
+
+== Structure of the Thesis
 
 // first explain what the work i am doing is and
 
-The thesis begins with background information about OWL2, the mancherster
-syntax, IDE's and language servers. This wide background is followed by detailed
-information about my implementation of a language server. What my decisions
-where and why. It involves translating a grammar, creating a language server
-crate and a plugin example for Visual Studio Code. The third big chapter is
+After the introduction and related work chapters, the thesis begins with
+background information about OWL2, the manchester syntax, IDE's and language
+servers in the @background. This wide background is followed by detailed
+information about my implementation of a language server in @implementation.
+What my decisions where and why. It involves translating a grammar, creating a
+language server crate and a plugin example for Visual Studio Code. @analysis is
 about testing the created program by running grammar tests, unit tests,
 end-to-end tests and benchmarks. Then analyzing and evaluating the results in
-the categories of speed, correctness and usability.
+the categories of speed, correctness in @benchmarks and usability in
+@evaluation.
 
-= Related work
+The implementation is not part of this document. It can be found in varous
+Github repositories. This is also the case for this typst document.
+
+- Bachelor thesis typst document\
+  https://github.com/janekx21/bachelor-thesis
+
+  - Distributed PDF (main.pdf)\
+    https://github.com/janekx21/bachelor-thesis/releases
+
+- Parser generator (tree sitter grammar)\
+  https://github.com/janekx21/tree-sitter-owl-ms
+
+- langauge server (rust crate)\
+  https://github.com/janekx21/owl-ms-language-server
+
+- Visual Studio Code plugin (npm package)
+  https://github.com/janekx21/vscode-owl-ms
+
+  - Distributed via Open VSX Marketplace\
+    https://open-vsx.org/extension/JanekWinkler/vscode-owl-ms
+
+  - Distributed via VisualStudio Marketplace\
+    https://marketplace.visualstudio.com/items?itemName=JanekWinkler.vscode-owl-ms
+
+= Related work <chapter:related_work>
+
+@sanderDesignImplementationLanguage
+@leimeisterLanguageServerIDE
+
+#todo(inline: true)[TOOD sander Design Implementation Language]
+#todo(inline: true)[TODO leimeister Language Server IDE]
 
 #lorem(100)
 
-= Background
+= Background <background>
 
 In this chapter I will explain programs, libraries, frameworks and techniques
 that are important to this work. You can skip parts that you are familiar with.
@@ -61,6 +169,9 @@ used.
 
 // TODO What it OWL 1
 
+To understand what OWL 2, the second version of the OWL language, is, let's hear
+from the authors of this semantic web language.
+
 #quote(
   block: true, attribution: [w3.org #cite(<OWLWebOntologya>, supplement: [abstract])],
 )[The OWL 2 Web Ontology Language, informally OWL 2, is an ontology language for
@@ -68,6 +179,10 @@ used.
   classes, properties, individuals, and data values and are stored as Semantic Web
   documents. OWL 2 ontologies can be used along with information written in RDF,
   and OWL 2 ontologies themselves are primarily exchanged as RDF documents.]
+
+This work concentrates on a specific syntax of the OWL language. The so-called
+Manchester Syntax. Let's hear from the authors of that syntax what it's all
+about.
 
 // TODO why owl2 not owl1
 #quote(
@@ -160,7 +275,7 @@ grammatical constrains that LR parsing comes with
 
 //TODO paper Deterministic Techniques for Efficient Non-Deterministic Parsers DOI:10.1007/3-540-06841-4_65
 
-= Implementation
+= Implementation <implementation>
 
 This chapter will explain what was implemented and how it was done. I will also
 show why I choose the tools that I did, what alternatives exist and when to use
@@ -222,8 +337,11 @@ C++ on the other hand is very fast but lacks the safety and comfort. This is not
 a strict requirement, and it would be a viable implementation language for this
 language server.// More about that in @rust_over_cpp.
 But the rust bindings, cargo package manager and memory safety are excellent and
-guaranteed an efficient implementation. In hindsight, it was a good choice and I
-recommend rust for writing language servers.
+guaranteed an efficient implementation. The Chromium project had found that
+roughly 70% of serious security bugs are memory safety problems @MemorySafety.
+The usage of Rust rules out the entire class of bugs for safe rust applications.
+In hindsight, it was a good choice and I recommend rust for writing language
+servers.
 
 // TODO reference rust book, typescript and c++ stuff
 
@@ -293,9 +411,12 @@ _frame: $ =>
 
 is a hidden rule, because `_frame` is a supertype of `class_frame`. These rules
 are hidden because they add substantial depth and noise to the syntax tree.// TODO reference https://tree-sitter.github.io/tree-sitter/creating-parsers#hiding-rules
-The transformations where done using the following table for reference. Each
-construct has a rule in the original reference and in the new tree sitter
-grammar.
+While using the written grammar in a later step of the implementation it was
+obvious that hiding each supertype node did increase the complexity of the
+queries, because while querying for a supertype each subtype must be named,
+instead of just one named supertype. The transformations where done using the
+following table for reference. Each construct has a rule in the original
+reference and in the new tree sitter grammar.
 
 // #show table.cell: it => {
 //   if it.x == 0 or it.y == 0 {
@@ -333,8 +454,9 @@ grammar.
   [grouping], [```( restriction | atomic )```], [```js choice($.restriction, $.atomic)```],
 )
 
-I also, in a second step, transformed typical BNF constructs into more readable
-tree sitter rules. These include
+In a second step the rules where transformed from typical BNF constructs into
+more readable tree sitter rules. These transformations are shown in the
+following table.
 
 #j-table(
   columns: (2fr, 3fr, 3fr), table.header([*Construct*], [*OWL BNF*], [*tree sitter grammar*]),
@@ -346,7 +468,7 @@ tree sitter rules. These include
   [one or more], [```<NT> ',' <NT>List```], [```js repeat1(<NT>)```],
   // ---------------------
   [annotated list], [```[a] <NT> { ',' [a] <NT> }```], [```js annotated_list(a, <NT>)```],
-)
+)<js_transfromations>
 
 Where `<NT>` is a non-terminal and `a` is the non-terminal called `annotations`.
 This is used for `<NT>List`, `<NT>2List`, `<NT>AnnotatedList` and every
@@ -364,23 +486,27 @@ will become
 annotation_annotated_list: $ => annotated_list($.annotations, $.annotation)
 ```
 
-// TODO regex and where to stop parsing
-There are limits on how precise your parse should be. The IRI rfc3987 format is
-part of the OWL2-MS specification but not simple in any way. I skipped some
-specification for the IRI and put in some regexs that worked for me but not
-necessarily for you. For example the IRI specification defines many small
-non-terminals.// TODO write more
+There are limits on how precise your parse should be. The IRI rfc3987
+format@rfc-3987 is part of the OWL2-MS specification but not simple in any way.
+Some specification for the IRI was skiped and put in some regexs that worked for
+the test data but not necessarily for all ontology documents. This had to be
+done because, for example the IRI specification, defines many small
+non-terminals. It would be time-consuming and impractical to write that grammar
+in full just to get some small benefit in syntax errors.
 
-// TODO i wrote tests to check that the parsing is correct
+Tests where wrote to see if the grammar and the resulting parser would produce
+the correct syntax tree for the given source code. This is done with tree
+sitters CLI. More about tree sitter query testing in @query-tests.
 
-I wrote tests to see if my grammar and the resulting parser would produce the
-correct syntax tree for the given source code. This is done with tree sitters
-CLI. More about tree sitter query testing in @query-tests.
-
-I did have to change the grammar while developing. This was of course
-time-consuming, as I had to adapt all queries for the language server.
-Unfortunately, there is no type checking or other tool support. Everything is
-based on magic strings.
+The grammar had to be changed while developing and after writing large parts of
+the language server, containing many queries. This was of course time-consuming,
+as all queries in the language server had to be adapted for the new grammar.
+Unfortunately, there is no type checking or other tool support inside the
+original tree sitter. Everything is based on magic strings. There is a tool
+called rust sitter@HydroprojectRustsitter2024 that does type checking and
+creates a generated rust data structure for a given grammar, but it has
+limitations like no incremental parsing support and was hence not suitable,
+because this feature was one of the reasons why tree sitter was chosen.
 
 === Using the generated parser
 
@@ -542,6 +668,9 @@ The good thing is that we can leave out all these technical details when
 building a language server, because packages provide these functions. In the
 case of this server, the used rust crate is called "tower-lsp".
 
+The owl-ms-language-server crate can be found in this Github repository
+https://github.com/janekx21/owl-ms-language-server.
+
 // TODO ref tower-lsp
 
 The next big point is synchronizing our document. The following chapters will
@@ -549,6 +678,7 @@ deal with this, followed by documentation, diagnostics, hints and
 auto-completion.
 
 == Text Document Synchronization
+#todo(inline: true)[TODO schreiben]
 
 === The `TextDocumentSyncKind` <sync_kind_incremental>
 
@@ -573,7 +703,7 @@ character insertion or deletion), compared to a full document. This is faster
 than transferring the entire document. You can find an example in
 @did_change_example.
 
-=== `textDocument/didOpen` Notification
+=== `textDocument/didOpen` Notification<section:did_open>
 
 Now let's explore our first language server endpoint. The simplest one after to
 the initialization. The notification is sent from the client to the server to
@@ -605,6 +735,14 @@ struct Backend {
     parser: Mutex<Parser>,
     document_map: DashMap<Url, Document>, // DashMap is an async hash map
     // ...
+}
+
+struct Document {
+    tree: Tree,
+    rope: Rope,
+    version: i32,
+    iri_info_map: DashMap<Iri, IriInfo>,
+    diagnostics: Vec<Diagnostic>,
 }
 
 #[tower_lsp::async_trait] // traits can not be async by default
@@ -712,7 +850,7 @@ capture language specific semantic meaning that regular expression can not
 
 That said, the owl-ms-language-server uses semantic tokens for syntax
 highlighting.
-// TODO <------------------------------ hier weiter arbeiten
+// TODO write more?
 
 ```rust
 // inside impl LanguageServer
@@ -728,24 +866,86 @@ async fn semantic_tokens_full(&self, params: SemanticTokensParams) -> Result<Opt
 ```
 
 #figure(
-  image("assets/screenshot_vscode_just_opened.svg", width: 80%), caption: [
-    Visual Studio Code (editor-container) with the owl-ms plugin after opening the
-    pizza ontology
+  grid(
+    columns: 2, row-gutter: 2mm, column-gutter: 1mm, image("assets/screenshot_vscode_just_opened-1.svg"), image("assets/screenshot_vscode_just_opened.svg"), "a) without the owl-ms plugin", "b) with the owl-ms plugin",
+  ), caption: [
+    Visual Studio Code (editor-container) after opening the pizza ontology
   ],
 )
 
-== `hover`
+== `textDocument/hover` Request
+
+This request is sent from the client to the server to request hover information
+at a given text document position. The parameter contains the text document
+identifier and a position inside this document. While the result contains the
+hover content in a markup format and the range that the hover applies to.
+
+```ts
+export interface HoverParams extends TextDocumentPositionParams,
+  WorkDoneProgressParams {
+}
+interface TextDocumentPositionParams {
+  textDocument: TextDocumentIdentifier;
+  position: Position;
+}
+
+export interface Hover {
+  contents: MarkedString | MarkedString[] | MarkupContent;
+  range?: Range;
+}```
+
+In the language server implementation this request is processed by the `hover` function.
+
+```rust
+// inside impl LanguageServer
+async fn hover(&self, params: HoverParams) -> Result<Option<Hover>> {
+    // Get the document from self.document_map
+    // Find deepest named node in the document at the position of the parameter
+    // Generate node info of that node
+    //     This is done by checking the node kind
+    //     The fallback case returns the node kind
+    // Return that info
+}
+```
+The source code of that function can be found in this rust file
+#link(
+  "https://github.com/janekx21/owl-ms-language-server/blob/510858a58f24dd251f33013a9623e20975f25daa/src/main.rs#L435",
+)[owl-ms-language-server/src/main.rs\#L435].
+
+The hover function first fetches the document from the document map. It is
+populated by the `textDocument/didOpen` notification that can be found in
+@section:did_open. All requests that fetch a document from the document map can
+fail if the document is not available, resulting in an error response. After the
+document, and thus also the parsed tree, the rope and the IRI info map, have
+been retrieved, the lowest named node under the requested position will be found
+in the tree. A tree walk is performed for this purpose. It creates a cursor at
+the tree root. Using a loop, the cursor is moved recursively along the tree
+until a leaf node is found. The cursor is then moved up (parent nodes) the tree
+again in a loop until a named node is found. This node is returned and used for
+the hover information. A distinction is now made between different types of
+nodes. When an IRI is hovered, each annotation must be retrieved from the IRI
+info map in order to display it in a meaningful way. The title of the hover info
+for example is the resolved `rdfs:label` value. The implementation does not do
+much more here, but it could also fetch all kinds of other information from the
+ontology. When a frame is hovered, the same information is returned as for the
+frame's IRI. All other node kinds will return a generic result that contains the
+node kind. The result can be seen in @image:hover. The figure also shows a
+slight imperfection. When designing the IRI info map, no attention was paid to
+the fact that an annotation can be used more than once. Here, for example, the `rdfs:label` is
+specified with different languages. However, only one is displayed. In this
+case, it is Polish, which is not useful for every user. In the future, such
+preferences should be adjustable.
 
 #figure(
   image("assets/screenshot_vscode_hover.svg", width: 80%), caption: [
   Visual Studio Code (editor-container) with the owl-ms plugin after hovering the `pizza:NamedPizza`
   IRI
   ],
-)
-
-#lorem(100)
+)<image:hover>
 
 == `diagnostics`
+
+#todo(inline: true)[TODO schreiben]
 
 #figure(
   image("assets/screenshot_vscode_diagnostics_1.svg", width: 80%), caption: [
@@ -765,11 +965,13 @@ async fn semantic_tokens_full(&self, params: SemanticTokensParams) -> Result<Opt
 #todo(inline: true)[staticly generated]
 
 == `inlay_hint`
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 #todo(inline: true)[screenshot]
 
 == `completions`
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 // TODO how the node kinds are converted into completion items
@@ -788,6 +990,7 @@ async fn semantic_tokens_full(&self, params: SemanticTokensParams) -> Result<Opt
 )
 
 == Used data structures
+#todo(inline: true)[TODO schreiben]
 #lorem(50)
 
 === Rope
@@ -838,51 +1041,158 @@ quick brown fox". @boehmRopesAlternativeStrings1995
 ]<rope_quick_brow_fox>
 
 === DashMap
-#lorem(100)
+
+DashMap@wejdenstalXacrimonDashmap is an implementation of a concurrent
+associative array/hashmap in Rust. I use DashMap with the document map and with
+the iri info map. It is an alternative to a rust hash map (`std::collections::HashMap`)
+which has a read write mutex (`RwLock<HashMap<K, V>>`). From the api it is very
+similar with the difference that it uses async/await syntax and can work in
+parallel. DashMap is very fast as the benchmarks of
+conc-map-bench@wejdenstalXacrimonConcmapbench2024 show.
 
 == Optimizations
-#lorem(100)
 
-=== Rust Async with Tokio
-#lorem(100)
+The owl-ms-language-server rust crate includes many optimizations. This section
+will list the used optimizations, explain why they are needed and mention
+alternatives. Parser grammar, Visual Studio Code plugin and other parts of the
+language server did not contain any optimizations. It is unknown if there is a
+possibility to optimize the grammar and reduce parsing time. The Visual Studio
+Code plugin is very light and there is only one obvious optimization. Using the
+build in syntax highlighting instead of the semantic token feature of the
+language server.
+
+// TODO explain the further sub sections
+
+=== Rust Async with Tokio <tokio>
+
+In general, language servers are asynchronous in nature. Beginning with the
+client-server architecture and extending into the internal structure. For that
+reason the whole server is set up in a way to not rely on synchronicity. The
+incremental document synchronization uses a versioned sub class of the text
+document identifier containing a URI and a version.
+
+```ts
+interface TextDocumentIdentifier {
+  uri: DocumentUri;
+}
+
+interface VersionedTextDocumentIdentifier extends TextDocumentIdentifier {
+  version: integer;
+}
+```
+
+The version will increment on each change. The order does not matter, provided
+no change notification is dropped. An ideal language server and client should
+buffer out of order requests. The language server protocol defines another
+useful concept named "work done progress". It is a generic notification that
+communicates the progress of longer asynchronous tasks using a start, report and
+end messages. This feature was considered but in the end, not needed for the
+owl-ms-language-server.
+
+For all of these asynchronous features the language server uses
+tokio@TokioAsynchronousRust. It is an asynchronous runtime for rust and needed,
+because rust does not come with any. Tokio is very fast and natively build with
+rust. Tokio is also scalable by being build upon the async/await language
+feature of rust, witch itself is scalable. In the case of this language server,
+Tokio uses green threads on a multithreaded runtime. It would be possible to use
+synchronous requests for a language server. But the server would block incoming
+requests and would therefore become useless. For example a client that requests
+a hover info and a document change at the in quick succession would corrupt the
+server state, because the server would drop the document change when it's
+blocked by the hover request. In an ideal world, one server could handle many
+clients simultaneously. With the Tokio runtime and the rust async/await support,
+it was really easy to add async support.
 
 === LS State vs. on promise tree query
 
-= Analysis
+#todo(inline: true)[TODO schreiben]
+
+= Analysis <analysis>
+#todo(inline: true)[TODO schreiben]
 #lorem(50)
 
 == Automated Testing
 
-#todo(inline: true)[why i tested]
+#todo(inline: true)[TODO schreiben]
 //TODO why i tested
 #lorem(100)
 
 === Query tests in tree sitter <query-tests>
-#lorem(100)
+
+The tree-sitter-owl2-manchester-syntax repository, that contains the tree sitter
+grammar that is used by the language server, has its own tests. They can be
+found in the `test/corpus/*.txt` files and are executed by running `npm test`.
+
+Each test entry takes the form of a test name, text and expected tree. The
+following test is a simple example of a typical `*.omn` file beginning.
+
+```
+======================
+Class Frame SubClassOf
+======================
+
+Ontology:
+  Class: Person
+    SubClassOf: owl:Thing
+
+-------------------------------------
+
+(source_file
+  (ontology
+    (class_frame
+      (class_iri (simple_iri))
+      (sub_class_of
+        (description
+          (class_iri (abbreviated_iri)))))))
+```
+
+Each entry in a test file starts with a line with just `=` (equal sign)
+characters followed by a name followed by a line with just `=` (equal sign)
+characters. Then the input source code followed by a line with only `-` (dash)
+characters. Then the expected output tree as an S-expression. Take a look at
+@how_to_read_s_expression on how to read them. This expression ignores
+whitespace and does only show named nodes.
+
+These grammar tests are very important. They document and verify the API.
+Running them after a grammar change verifies that everything still parses
+correctly. But when changing the grammar the tests don't line up anymore and
+also need to be changed. Each visible node and each permutation of language
+constructs should have a corresponding test to increase the test coverage. When
+multiple people work on a tree sitter grammar, the tests give the reader a good
+understanding of what inputs produce what outputs, the "edges" of a language.
+Tree sitter also supports testing syntax highlighting, but this project does not
+use it.
 
 === Unit tests in rust
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 === E2E tests using a LSP client
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 // TOOD using vscode?
 
-== Benchmarks
+== Benchmarks <benchmarks>
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 === Experimental Setup
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 === Results
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
-== Evaluation of the usability
+== Evaluation of the usability <evaluation>
 
 === Experimental Setup
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 === Results
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 //TODO who are the users
 //TODO describe the usability
@@ -894,12 +1204,15 @@ quick brown fox". @boehmRopesAlternativeStrings1995
 - It was hard to track each syntax thing like keywords and rules.
 - Changing the grammar has a large impact.
 
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 == Performance
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 == Future Work
+#todo(inline: true)[TODO schreiben]
 #lorem(100)
 
 // = Appendix
@@ -921,3 +1234,5 @@ quick brown fox". @boehmRopesAlternativeStrings1995
  - Am Ende, Frage beantworten
 
  */
+#empty-page
+#bibliography("../lib.bib")

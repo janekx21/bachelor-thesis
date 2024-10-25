@@ -24,6 +24,13 @@
   margin-note(stroke: ovgu-orange, body)
 }
 
+// #let research-question(body) =
+// #figure(
+//   kind: "RQ", supplement: "RQ", numbering: "1",
+// )[
+//   #grid(columns: (auto, auto), gutter: 2pt, [*RQ #numbering("1"):*], body)
+// ]
+
 // Like \section* (unnumbered level 2 heading, does not appear in ToC).
 #let section = heading.with(level: 2, outlined: false, numbering: none)
 // Neat inline-section in smallcaps and sans font.
@@ -46,13 +53,15 @@
 
 // Custom Janek table
 #let j-table(..args) = {
-  set table(
-    stroke: (x, y) => (
-      top: if y > 0 { 0.5pt + gray }, left: if x > 0 { 0.5pt + gray }, bottom: if y == 0 { 0.5pt + gray },
-    ),
-  )
-  rect(
-    table(..args, row-gutter: (2.5pt, auto)), radius: 6pt, inset: 0%, stroke: 0.5pt + gray,
+  figure(
+    [
+      #set table(stroke: (x, y) => (top: if y > 0 { 0.5pt + gray }, left: if x > 0 {
+        0.5pt + gray
+      }, bottom: if y == 0 { 0.5pt + gray }))
+      #rect(
+        table(..args, row-gutter: (2.5pt, auto)), radius: 6pt, inset: 0%, stroke: 0.5pt + gray,
+      )
+    ], kind: table,
   )
 }
 
@@ -74,8 +83,12 @@
 
   // Make URLs use monospaced font.
   show link: it => {
-    set text(font: "Inconsolata", 12pt * 0.95) if type(it.dest) == str
-    it
+    if (type(it.dest) == str) {
+      set text(font: "Inconsolata", 12pt * 0.95)
+      underline(it)
+    } else {
+      it
+    }
   }
 
   // Enable heading specific figure numbering and increase spacing.
@@ -189,17 +202,21 @@
 
   show raw: set text(font: "Inconsolata")
   show raw.where(block: true): r => {
-    set par(justify: false)
-    show raw.line: l => {
-      box(
-        table(
-          columns: (-1.25em, 100%), stroke: 0pt, inset: 0em, column-gutter: 1em, align: (x, y) => if x == 0 { right } else { left }, text(fill: ovgu-darkgray, str(l.number)), l.body,
-        ),
-      )
-    }
+    if (r.lang == "pintora") {
+      r // pintora renders as a graph not code
+    } else {
+      set par(justify: false)
+      show raw.line: l => {
+        box(
+          table(
+            columns: (-1.25em, 100%), stroke: 0pt, inset: 0em, column-gutter: 1em, align: (x, y) => if x == 0 { right } else { left }, text(fill: ovgu-darkgray, str(l.number)), l.body,
+          ),
+        )
+      }
 
-    set align(left)
-    rect(width: 100%, stroke: gray + 0.5pt, inset: 0.75em, radius: 6pt, r)
+      set align(left)
+      rect(width: 100%, stroke: gray + 0.5pt, inset: 0.75em, radius: 6pt, r)
+    }
   }
 
   show heading.where(level: 2): set text(font: "Libertinus Sans", Large)
@@ -271,7 +288,7 @@
     }
   ]
 
-  show raw: set text(12pt * 0.95)
+  // show raw: set text(12pt * 0.95)
   pagebreak(to: "odd")
   set-page-properties()
 
