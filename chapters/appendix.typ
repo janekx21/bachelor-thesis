@@ -25,7 +25,7 @@ parent and two children and `leaf` nodes are tree leafs. This results in the
 following tree.
 
 #figure(
-  caption: "TODO",
+  caption: "Example tree",
 )[
   #set align(center)
   #let data = ([root], ([leaf]), ([node], [leaf], [leaf]))

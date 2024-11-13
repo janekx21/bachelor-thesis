@@ -116,9 +116,9 @@ background information about OWL2, the manchester syntax, IDE's and language
 servers in the @background. This wide background is followed by detailed
 information about my implementation of a language server in @implementation.
 What my decisions where and why. It involves translating a grammar, creating a
-language server crate and a plugin example for Visual Studio Code. @analysis is
-about testing the created program by running grammar tests, unit tests,
-end-to-end tests and benchmarks. Then analyzing and evaluating the results in
+language server crate/package and a plugin example for Visual Studio Code.
+@analysis is about testing the created program by running grammar tests,
+integration tests and benchmarks. Then analyzing and evaluating the results in
 the categories of speed, correctness in @benchmarks and usability in
 @evaluation.
 
@@ -134,7 +134,7 @@ Github repositories. This is also the case for this typst document.
 - Parser generator (tree sitter grammar)\
   https://github.com/janekx21/tree-sitter-owl-ms
 
-- langauge server (rust crate)\
+- langauge server (rust crate/package)\
   https://github.com/janekx21/owl-ms-language-server
 
 - Visual Studio Code plugin (npm package)
@@ -576,8 +576,8 @@ have to be adapted and unfortunately there is no good static analysis for this.
 The grammar distribution works through the GitHub repository
 https://github.com/janekx21/tree-sitter-owl-ms. It contains an NPM package,
 queries and bindings. The queries are for folds, highlights and indents; the
-bindings are for node and rust. The latter defines a crate which the language
-server imports as a submodule and uses as a local dependency.
+bindings are for node and rust. The latter defines a crate/package which the
+language server imports as a submodule and uses as a local dependency.
 
 == Getting started with the LSP specification and its Rust implementation
 
@@ -604,6 +604,7 @@ sequenceDiagram
   Client->>Server: textDocument/didOpen(params: DidOpenTextDocumentParams)
   Server->>Client: textDocument/publishDiagnostics(params: PublishDiagnosticsParams)
   == Using the Language Server ==
+  Client->>Server: textDocument/didClose(params: DidCloseTextDocumentParams)
   Client->>+Server: shutdown()
   Server-->>-Client: result: null
   Client-xServer: exit()
@@ -656,29 +657,60 @@ a response will be sent. The server responds with the initialize result, which
 also contains the server capabilities. Not every language server supports all
 features, so it must be communicated at this point which features the client can
 use. The client then sends an initialized notification to the server. Now the
-server and client are ready to start working. The handshake is complete.
-
-A communication ends preferably with a shutdown request from the client. After
-an empty response from the server, the client sends a final exit notification
-and this concludes the communication.
+server and client are ready to start working. The handshake is complete. A
+communication ends preferably with a shutdown request from the client. After an
+empty response from the server, the client sends a final exit notification and
+this concludes the communication.
 
 // TODO maybe dynamic client capabilities, set trace, log trace
 
 The good thing is that we can leave out all these technical details when
 building a language server, because packages provide these functions. In the
-case of this server, the used rust crate is called "tower-lsp".
+case of this server, the used rust crate/package is called "tower-lsp". Just
+supply a trait implementation for your server state and that's it. A minimal
+code example that creates an empty language server can be found in
+@code:minimal-server.
 
-The owl-ms-language-server crate can be found in this Github repository
-https://github.com/janekx21/owl-ms-language-server.
+#figure(
+  caption: "Minimal language server in rust via tower-lsp crate/package",
+)[
+```rust
+struct Backend {
+    // Put your state here
+}
+#[tower_lsp::async_trait]
+impl LanguageServer for Backend {
+    // Put your functions here
+}
+#[tokio::main]
+async fn main() {
+    let (service, socket) = LspService::new(|client| Backend {
+        // Init your state here
+    });
 
-// TODO ref tower-lsp
+    let stdin = tokio::io::stdin();
+    let stdout = tokio::io::stdout();
+    Server::new(stdin, stdout, socket).serve(service).await;
+}```
+]<code:minimal-server>
 
-The next big point is synchronizing our document. The following chapters will
-deal with this, followed by documentation, diagnostics, hints and
-auto-completion.
+The next chapters will contain single language server protocol requests and
+notifications. The chapters always start with a description, contain the
+typescript interface and the tower-lsp functions, followed by an in depth
+explanation and an example image. The next big point is synchronizing our
+document. The following chapters will deal with this, followed by documentation,
+diagnostics, hints and auto-completion.
 
 == Text Document Synchronization
-#todo(inline: true)[TODO schreiben]
+
+The language server protocol defines how a document is sent from the client to
+the server. The server does not open the file itself. It just gets the contents
+and can request other files from the client. In ensures that the client can
+operate safely separated from the server. This makes it even possible to run the
+server on a separate host or even another operating system. The language server
+has no need for an internet connection, file system, random generator or time.
+It just needs a stable RPC connection to the client. This connection can be a
+network socket, file socket or in most cases just stdio.
 
 === The `TextDocumentSyncKind` <sync_kind_incremental>
 
@@ -761,6 +793,11 @@ impl LanguageServer for Backend {
 }
 ```
 
+The source code of that function can be found in this rust file
+#link(
+  "https://github.com/janekx21/owl-ms-language-server/blob/c39761487c920dcaf65720947ab8e2345e2bec1f/src/main.rs#L236",
+)[owl-ms-language-server/src/main.rs\#L236].
+
 This method does not return anything; it is a Notification and only there for
 our language server to register that a file has been opened. The language server
 then parses the file and creates a rope data structure. It also creates
@@ -772,6 +809,22 @@ rope and the tree are moved into the document map. This also consumes them, so
 it is a move, not a copy.
 
 === `textDocument/didChange` Notification <did_change>
+
+#figure(
+  caption: [A typical text document update lifecycle], kind: image,
+)[
+```pintora
+sequenceDiagram
+  @param noteMargin 20
+  Client->>Server: textDocument/didChange(params: ChangeOpenTextDocumentParams)
+  @start_note left of Server
+  Update the internal server state
+  and generate new diagnostics
+  @end_note
+  Server->>Client: textDocument/publishDiagnostics(params: PublishDiagnosticsParams)
+```
+// TODO ref springer buch
+]
 
 This notification is sent from the client to the server to inform the language
 server about changes in a text document. Its parameter contains the text
@@ -820,6 +873,11 @@ async fn did_change(&self, params: DidChangeTextDocumentParams) {
     // Publish diagnostics async
 }
 ```
+The source code of that function can be found in this rust file
+#link(
+  "https://github.com/janekx21/owl-ms-language-server/blob/c39761487c920dcaf65720947ab8e2345e2bec1f/src/main.rs#L273",
+)[owl-ms-language-server/src/main.rs\#L273].
+
 === `textDocument/didClose` Notification <did_close>
 
 This notification is sent from the client to the server when a text document got
@@ -831,6 +889,10 @@ async fn did_close(&self, params: DidCloseTextDocumentParams) {
     self.document_map.remove(&params.text_document.uri);
 }
 ```
+The source code of that function can be found in this rust file
+#link(
+  "https://github.com/janekx21/owl-ms-language-server/blob/c39761487c920dcaf65720947ab8e2345e2bec1f/src/main.rs#L421",
+)[owl-ms-language-server/src/main.rs\#L421].
 
 == `textDocument/semanticTokens/full` Request
 
@@ -864,6 +926,10 @@ async fn semantic_tokens_full(&self, params: SemanticTokensParams) -> Result<Opt
     // Return the tokens
 }
 ```
+The source code of that function can be found in this rust file
+#link(
+  "https://github.com/janekx21/owl-ms-language-server/blob/c39761487c920dcaf65720947ab8e2345e2bec1f/src/main.rs#L695",
+)[owl-ms-language-server/src/main.rs\#L695].
 
 #figure(
   grid(
@@ -884,6 +950,7 @@ hover content in a markup format and the range that the hover applies to.
 export interface HoverParams extends TextDocumentPositionParams,
   WorkDoneProgressParams {
 }
+
 interface TextDocumentPositionParams {
   textDocument: TextDocumentIdentifier;
   position: Position;
@@ -937,38 +1004,258 @@ case, it is Polish, which is not useful for every user. In the future, such
 preferences should be adjustable.
 
 #figure(
-  image("assets/screenshot_vscode_hover.svg", width: 80%), caption: [
+  image("assets/screenshot_vscode_hover.svg", width: 100%), caption: [
   Visual Studio Code (editor-container) with the owl-ms plugin after hovering the `pizza:NamedPizza`
   IRI
   ],
 )<image:hover>
 
-== `diagnostics`
+== `textDocument/publishDiagnostics` Push Notification
 
-#todo(inline: true)[TODO schreiben]
+This push notification is sent from the server to the client to push a new set
+of diagnostics.
+
+```ts
+interface PublishDiagnosticsParams {
+  uri: DocumentUri;
+  version?: integer;
+  diagnostics: Diagnostic[];
+}
+
+
+export interface Diagnostic {
+  range: Range;
+  severity?: DiagnosticSeverity; // used just a static 1 = Error
+  source?: string; // used just a static "owl-language-server"
+  message: string;
+  // ... some other properties that where not used
+}
+
+export type DiagnosticSeverity = 1 | 2 | 3 | 4;
+```
+
+The language server sends this notification whenever the diagnostics change,
+event if they are removed completely. This is done in the `textDocument/didOpen` Notification
+(found in @section:did_open) and the `textDocument/didChange` Notification
+(found in @did_change). They are generated using a `gen_diagnostics` function
+that takes a syntax tree node on which to generate them. On the first opening of
+a file this node is the root of the syntax tree. All further changes search for
+this node by finding the highest node that overlaps with the change range.
+Diagnostics are cached and are only changed when something in their range
+changes in the document. For this reason, the server must also have all
+diagnostics available for every open document.
 
 #figure(
-  image("assets/screenshot_vscode_diagnostics_1.svg", width: 80%), caption: [
-    TODO
-  ],
-)
+  caption: [Part of the `did_open` function that prunes and extends diagnostics],
+)[
+```rust
+// Do this for an updated document and a changed range (so we got document and range)
+
+// Remove old diagnostics
+document
+    .diagnostics
+    .retain(|d| !range_overlaps(&d.range.into(), range));
+
+// Find the node that needs new diagnostics
+let mut cursor = document.tree.walk();
+while range_exclusive_inside(range, &cursor.node().range().into()) {
+    if cursor.goto_first_child_for_point(range.start.into()).is_none() {
+        break;
+    }
+}
+cursor.goto_parent();
+let node_that_has_change = cursor.node();
+drop(cursor);
+
+// Generate those diagnostics
+let additional_diagnostics = gen_diagnostics(&node_that_has_change)
+    .into_iter()
+    // Because the node could include unchanged diagnostics we need to remove those to
+    // not add duplicates
+    .filter(|d| range_overlaps(&d.range.into(), range));
+
+// Add the new diagnostics back in
+document.diagnostics.extend(additional_diagnostics);
+```
+]<code:diagnostics_prune_and_extend>
+
+The @code:diagnostics_prune_and_extend shows how the `did_change` function first
+removes all old diagnostics for a change range and then inserts newly generated
+ones. The more complex `gen_diagnostics` function takes a changed node and
+generates diagnostics for cust that node.
+
+#figure(caption: [`gen_diagnostics` function with complex tree walk])[
+```rust
+fn gen_diagnostics(node: &Node) -> Vec<Diagnostic> {
+    let mut cursor = node.walk();
+    let mut diagnostics = Vec::<Diagnostic>::new();
+
+    loop {
+        let node = cursor.node();
+        if node.is_error() {
+            // Root has no parents so use itself
+            let parent_kind = node.parent().unwrap_or(node).kind();
+
+            // Push a diagnostic using static node type lookup
+            // for valid children of parent
+
+            while !cursor.goto_next_sibling() {
+                if !cursor.goto_parent() {
+                    return diagnostics;
+                }
+            }
+        } else if node.has_error() {
+            let has_child = cursor.goto_first_child();
+            if !has_child {
+                while !cursor.goto_next_sibling() {
+                    if !cursor.goto_parent() {
+                        return diagnostics;
+                    }
+                }
+            }
+        } else {
+            while !cursor.goto_next_sibling() {
+                if !cursor.goto_parent() {
+                    return diagnostics;
+                }
+            }
+        }
+    }
+}
+```
+]<code:gen_diagnostics>
+
+The `gen_diagnostics` function seen in @code:gen_diagnostics is not a recursive
+tree walk but rather uses a loop. It works by walking the tree with a cursor.
+The cursor moves along the siblings and to the parent, when the node does not
+contain errors. Otherwise, it moves into the first child and along the siblings.
+When it encounters a node that is an error node directly, a diagnostic is pushed
+into the returned vector. The message of the diagnostic is based on the parent
+node of the error. Using a static node type lookup, the possible child nodes can
+be found. Sadly tree-sitter does not directly deliver the information of
+possible nodes and therefore the message will not be correct all the time.
+Future developments could improve this message greatly.
+
+Static node types are created by tree-sitter and are stored in a simple JSON
+file called `src/node-types.json`. The language server loads them lazy and
+deserializes them using the popular "serde" crate/package. The result is put
+into a dash map for quick lookup when generating diagnostics. The file contains
+every node type and the children of that node.
 
 #figure(
-  image("assets/screenshot_vscode_diagnostics_2.svg", width: 80%), caption: [
-    TODO
+  caption: [A portion of the `node-types.json` file showing the `class_iri` node kind],
+)[
+```json
+...
+  {
+    "type": "class_iri",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "abbreviated_iri",
+          "named": true
+        },
+        {
+          "type": "full_iri",
+          "named": true
+        },
+        {
+          "type": "simple_iri",
+          "named": true
+        }
+      ]
+    }
+  },
+...
+```
+]
+
+#figure(
+  image("assets/screenshot_vscode_diagnostics_1.svg", width: 100%), caption: [
+    Syntax error example
   ],
-)
+)<image:errors>
 
-// TODO diagnostics with multiple errors
+In the example case, that is shown in @image:errors, the syntax error resulting
+from the invalid "????????" part is shown. The message is generated from the
+parent node. In this case it is "Object Propery Frame", found after "inside".
+The lookup into the node types returned the possible children and displays them
+in the diagnostics after
+"expected". Because tree-sitter does do error recovery, it is possible to show
+every syntax error in a file. Clients can show every error (Called "Problems" in
+@image:multiple_errors) in a source code file. The language server does not show
+errors other than syntax errors like semantic ones. A future version could
+improve diagnostics and show a more complex errors. This could be done by using
+the OWL Api or maybe a OWL solver application.
 
-#lorem(100)
-#todo(inline: true)[staticly generated]
+#figure(
+  image("assets/screenshot_vscode_diagnostics_2.svg", width: 100%), caption: [
+    Syntax error example with overview overview of all problems in a file
+  ],
+)<image:multiple_errors>
 
-== `inlay_hint`
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
+== `textDocument/inlayHint` Request
 
-#todo(inline: true)[screenshot]
+This request is sent from the client to the server to request inlay hints in a
+range of a specific text document. The parameter contains the text document
+identifier and a range. This range is typically the view box into a opend file
+from the client.
+
+```ts
+export interface InlayHintParams extends WorkDoneProgressParams {
+  textDocument: TextDocumentIdentifier;
+  range: Range;
+}
+
+export interface InlayHint {
+  position: Position;
+  label: string | InlayHintLabelPart[]; // this LS uses string
+  paddingLeft?: boolean;
+  paddingRight?: boolean;
+  // ... some other properties that where not used
+}
+```
+
+The inlay hints are the feature that makes `*.omn` files, with numbers used as
+identification in the IRI's, tolerable for text editors. It enriches the view of
+the source code with human-readable information by retrieving the so-called
+"rdfs:label" from the annotations contained in the document and displaying it
+next to the IRI. In the @image:inlay_hints example, it can be seen that the
+class for emissions does not use a human-readable IRI. Instead, it is a number
+that is incremented for each frame. In OWL ontologies, it is up to the author to
+decide which IRI to use and they many use these automatically generated ones to
+facilitate subsequent renaming. However, this makes it very difficult to read
+such documents. The reader would have to look up each IRI and the language
+server in this tool takes care of this lookup. For example, the IRI that ends
+with "OEO_00000147" is provided with an inlay hint that displays the
+"rdfs:label", i.e. "emission". However, the owl-ms-language-server only
+implements a very rudimentary variant. In the future, additional information
+from other `*.omn` files or even external OWL ontologies could be taken into
+account.
+
+```rust
+async fn inlay_hint(&self, params: InlayHintParams) -> Result<Option<Vec<InlayHint>>> {
+    // Get the document from self.document_map
+    // Query all IRI's but restrict the query to the range in params.range
+    // For each found match do a lockup into the documents iri_info_map
+    //    Generate an inlay hint for the retrieved info (this uses the rdfs:label annotation)
+    // Return the transformed inlay hints
+}
+  ```
+The source code of that function can be found in this rust file
+#link(
+  "https://github.com/janekx21/owl-ms-language-server/blob/c39761487c920dcaf65720947ab8e2345e2bec1f/src/main.rs#L459",
+)[owl-ms-language-server/src/main.rs\#L459].
+
+#figure(
+  image("assets/screenshot_vscode_inlay_hints.svg", width: 100%), caption: [
+    Highlighted inlay hints in a small omn file
+  ],
+)<image:inlay_hints>
 
 == `completions`
 #todo(inline: true)[TODO schreiben]
@@ -978,13 +1265,13 @@ preferences should be adjustable.
 // TODO how the parent node is queried and used with static nodes
 
 #figure(
-  image("assets/screenshot_vscode_completion_iri.svg", width: 80%), caption: [
+  image("assets/screenshot_vscode_completion_iri.svg", width: 100%), caption: [
     TODO
   ],
 )
 
 #figure(
-  image("assets/screenshot_vscode_completion_keyword.svg", width: 80%), caption: [
+  image("assets/screenshot_vscode_completion_keyword.svg", width: 100%), caption: [
     TODO
   ],
 )
@@ -1040,6 +1327,26 @@ quick brown fox". @boehmRopesAlternativeStrings1995
 )
 ]<rope_quick_brow_fox>
 
+The advantage of ropes is that parts of the string can be changed quickly. Both
+additions and deletions are in $O(log n)$ and therefore much faster than
+monolithic string arrays. The disadvantage of such a data structure is the
+reading of sections (report i to j). Here the time complexity is comparable to
+the monolithic string array plus the time of the rope tree traversal. Reporting
+a string slice is in $O(j + log n)$. In addition to that a rope needs more
+overall space and time for managing that a traditional string array. But arrays
+also need huge amounts of memory for copying operations.
+@boehmRopesAlternativeStrings1995
+
+#j-table(
+  columns: (auto, auto, auto), table.header([*Operation*], [*Rope*], [*String*]),
+  // ---------------------
+  [Insert], [$O(log n)$], [$O(n)$],
+  // ---------------------
+  [Delete], [$O(log n)$], [$O(n)$],
+  // ---------------------
+  [Report(i, j)], [$O(j + log n)$], [$O(j)$],
+)
+
 === DashMap
 
 DashMap@wejdenstalXacrimonDashmap is an implementation of a concurrent
@@ -1052,14 +1359,14 @@ conc-map-bench@wejdenstalXacrimonConcmapbench2024 show.
 
 == Optimizations
 
-The owl-ms-language-server rust crate includes many optimizations. This section
-will list the used optimizations, explain why they are needed and mention
-alternatives. Parser grammar, Visual Studio Code plugin and other parts of the
-language server did not contain any optimizations. It is unknown if there is a
-possibility to optimize the grammar and reduce parsing time. The Visual Studio
-Code plugin is very light and there is only one obvious optimization. Using the
-build in syntax highlighting instead of the semantic token feature of the
-language server.
+The owl-ms-language-server rust crate/package includes many optimizations. This
+section will list the used optimizations, explain why they are needed and
+mention alternatives. Parser grammar, Visual Studio Code plugin and other parts
+of the language server did not contain any optimizations. It is unknown if there
+is a possibility to optimize the grammar and reduce parsing time. The Visual
+Studio Code plugin is very light and there is only one obvious optimization.
+Using the build in syntax highlighting instead of the semantic token feature of
+the language server.
 
 // TODO explain the further sub sections
 
@@ -1103,9 +1410,51 @@ blocked by the hover request. In an ideal world, one server could handle many
 clients simultaneously. With the Tokio runtime and the rust async/await support,
 it was really easy to add async support.
 
-=== LS State vs. on promise tree query
+=== Language server state vs. on promise tree query
 
-#todo(inline: true)[TODO schreiben]
+The owl-ms-language-server has some obvious internal state like all opened
+documents. Some state is not that obvious and this sections discusses one of
+them. @code:backend contains the complete backend model; witch is more or less
+the servers whole state. It contains the connected client (just one), the reused
+parser, the opened documents and a setting for which position encoding to use
+(some editors don't suppot UTF-8).
+
+#figure(caption: "Backend model of the language server")[
+```rust
+struct Backend {
+    client: Client,
+    parser: Mutex<Parser>,
+    document_map: DashMap<Url, Document>,
+    position_encoding: Mutex<PositionEncodingKind>,
+}
+```
+]<code:backend>
+
+Let's take a look at a document to see what state it stores. The model of the
+document can be found in @code:document. It contains the syntax tree (no source
+code, just nodes), a rope of the text (wich the syntax tree uses to fetch the
+source code), an incrementing version, current diagnostics and a very odd `iri_info_map`.
+The diagnostics and the IRI informations can be generated from the tree and rope
+and are therefore repeated information in other words data redundancy.
+
+#figure(caption: "Document model of the language server")[
+```rust
+struct Document {
+    tree: Tree,
+    rope: Rope,
+    version: i32,
+    iri_info_map: DashMap<Iri, IriInfo>,
+    diagnostics: Vec<Diagnostic>,
+}
+```
+]<code:document>
+
+The question that came up while developing is: "Should all document data come
+from just the tree or can you cache some information?". I used the additional
+state alternative, because retrieving distributed information like IRI info will
+cause a tree query to traverse the whole document/workspace. Caching on the
+other hand has the implication of constantly updating the state. The
+disadvantage, it's more likely to be bugged than an ad hoc query.
 
 = Analysis <analysis>
 #todo(inline: true)[TODO schreiben]
@@ -1113,9 +1462,16 @@ it was really easy to add async support.
 
 == Automated Testing
 
-#todo(inline: true)[TODO schreiben]
-//TODO why i tested
-#lorem(100)
+The language server uses two kinds of automated testing. The first one is
+testing the grammar using input source code and expected syntax tree output. The
+second testing kind used where integration tests in rust. They focus more on
+integration between tree-sitter and the language server, testing like a client
+would connect and asserting a result. It is also possible to do end-to-end
+testing using Visual Studio Code, but this was sparred here for time reasons.
+
+The tests should run when pushing to the repository in GitHub by using
+GitHub-Actions. Merging or deploying a version should only be done when every
+automated test succeeds.
 
 === Query tests in tree sitter <query-tests>
 
@@ -1163,27 +1519,137 @@ understanding of what inputs produce what outputs, the "edges" of a language.
 Tree sitter also supports testing syntax highlighting, but this project does not
 use it.
 
-=== Unit tests in rust
+=== Integration tests in rust
 #todo(inline: true)[TODO schreiben]
 #lorem(100)
-
-=== E2E tests using a LSP client
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
-
-// TOOD using vscode?
 
 == Benchmarks <benchmarks>
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
+There are two kinds of speed measurements. The first kind is cargo benchmarks
+using criterion. The second kind is runtime logs of real operations. The runtime
+logs is a kind of profiling and are only intended to show that the editor can
+also operate in real time with a real client and files. No benchmarks for end to
+end operations are necessary yet, as the language server remains nice and fast
+even with large files. Only the required main memory is a bit too big for
+massive ontology files. It has not yet been possible to determine why this is
+the case. In the future, this is a part of the language server that could be
+improved, because ontologies can become very large. The following section deals
+with how the benchmarks are set up. Some code is shown and explained. The
+section after that is about the results of the benchmarks.
 
 === Experimental Setup
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
+
+#figure(
+  caption: [Rust benchmark "ontology_size_bench"],
+)[
+```rust
+fn ontology_size_bench(c: &mut Criterion) {
+    let mut group = c.benchmark_group("ontology_size_bench");
+    for size in (1..40).map(|i| i * 100) {
+        group.throughput(Throughput::Elements(size as u64));
+        group.bench_with_input(BenchmarkId::from_parameter(size), &size, |b, &size| {
+            b.iter_batched_ref(
+                || {
+                    let mut source_code = "Ontology: <http://foo.bar>".to_string();
+                    source_code.push_str(
+                        "Class: <http://foo.bar/0> Annotations: rdfs:label \"Fizz\" "
+                            .repeat(size)
+                            .as_str(),
+                    );
+
+                    let mut parser = Parser::new();
+                    parser.set_language(language()).unwrap();
+                    (source_code.to_string(), parser)
+                },
+                |(source, parser)| parse_helper(source, parser),
+                criterion::BatchSize::SmallInput,
+            )
+        });
+    }
+    group.finish();
+}
+
+fn parse_helper(source_code: &String, parser: &mut Parser) {
+    parser.reset();
+    parser.parse(source_code, None).unwrap();
+}
+```
+]<code:benchmark_ontology_size>
+
+As can be seen in the @code:benchmark_ontology_size, a temporary ontology is
+created in the “ontology_size_bench”, which is variable in size from 100 to 4000
+class frames and named input size (elements). Each benchmark is given a name. In
+this case ontology_size_bench/\<number of class frames\>. Each benchmark is run
+for at least 60 seconds to obtain at least 100 samples. The number of iterations
+can therefore be very high. Up to 30 thousand for fast benchmarks. For some
+benchmarks, it is also possible that 100 samples cannot be taken because it
+would take longer than 60 seconds. In this case, the length of the benchmarks is
+increased. This can be over 100 seconds for some.
+
+The second benchmark from @code:ontology_change_bench is similar. It also
+creates a temporary ontology with a variable size named input size (elements)
+that is the number of class frames in the ontology that will be parsed. However,
+the benchmark performs the parsing in advance and then measures the time
+required for a change. In this case, no change is even made at all.
+
+#figure(
+  caption: [Rust benchmark "ontology_change_bench"],
+)[
+```rust
+fn ontology_change_bench(c: &mut Criterion) {
+    let mut group = c.benchmark_group("ontology_change_bench");
+    for size in (1..40).map(|i| i * 1000) {
+        group.throughput(Throughput::Elements(size as u64));
+        group.bench_with_input(BenchmarkId::from_parameter(size), &size, |b, &size| {
+            b.iter_batched_ref(
+                || {
+                    let mut source_code = "Ontology: <http://foo.bar>\n".to_string();
+                    source_code.push_str(
+                        "Class: <http://foo.bar/0>\nAnnotations: rdfs:label \"Fizz\"\n"
+                            .repeat(size)
+                            .as_str(),
+                    );
+
+                    let mut parser = Parser::new();
+                    parser.set_language(language()).unwrap();
+                    let mut old_tree = parser.parse(source_code.clone(), None).unwrap();
+                    (source_code.to_string(), parser, old_tree)
+                },
+                |(source, parser, old_tree)| re_parse_helper(source, parser, old_tree),
+                criterion::BatchSize::SmallInput,
+            )
+        });
+    }
+    group.finish();
+}
+
+fn re_parse_helper(source_code: &String, parser: &mut Parser, old_tree: &Tree) {
+    parser.parse(source_code, Some(old_tree)).unwrap();
+}
+```
+]<code:ontology_change_bench>
+
+It's expected that an incremental parser only parses the changed sections and
+delivers a $O(1)$ runtime complexity on an unchanged source, but the results
+suggest otherwise. This benchmark came to be, because the profiling showd ood
+timings in small changes.
 
 === Results
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
+
+The results show two things. Normal parsing is complex in the runtime of $O(n)$.
+This was basically to be expected, because parsing requires iterating over all
+characters at least once. Nevertheless, it is good to see that the parser is
+roughly in the best possible runtime complexity. The second result shows that
+incremental parsing is also in $O(n)$. Here I would have expected the runtime
+complexity to be lower. Nevertheless, incremental parsing is significantly
+faster than blind parsing. A five to tenfold acceleration is to be expected.
+
+#figure(caption: [Results of the "ontology_size_bench" benchmark])[
+  #image("assets/benchmark_lines.svg")
+]<image:ontology_size_bench>
+
+#figure(caption: [Results of the "ontology_change_bench" benchmark])[
+  #image("assets/benchmark_change_lines.svg")
+]<image:ontology_size_bench>
 
 == Evaluation of the usability <evaluation>
 
@@ -1214,6 +1680,12 @@ use it.
 == Future Work
 #todo(inline: true)[TODO schreiben]
 #lorem(100)
+
+- Mono Repo for easy releases
+- More features (see list in repo)
+- More tests (of queries for example)
+- Fetching external ontolgies
+- Create class code action when class iri is not found
 
 // = Appendix
 
