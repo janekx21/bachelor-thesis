@@ -21,62 +21,71 @@
 // #pagebreak()
 
 = Introduction
-#todo(inline: true)[TODO schreiben]
 
-== Motivation
-#todo(inline: true)[TODO schreiben]
+Modern society is constantly evolving, and software plays an integral role in
+our daily lives. This ongoing change leads to new use cases and shifting
+requirements for modern software. To meet these demands, developers are
+continually tasked with adding new features or modifying existing ones, which
+results in larger and more complex codebases. As complexity grows, programming
+errors become inevitable, potentially leading to undesirable behaviors. Testing
+is a common method developers use to identify errors and unintended behaviors.
+Extensive test suites are run during development to evaluate a component's
+behavior under various inputs and conditions. While testing can reveal many
+errors, it cannot guarantee the absence of all defects or ensure the overall
+correctness of the program. As noted by Beyer and Lemberger in "Software
+Verification: Testing vs. Model Checking"#todo[hier muss ref hin] , formal
+verification should complement testing to provide a more robust assurance of
+program correctness. Formal verification requires a specification of the desired
+behavior, which the verification tool then uses to check if the program meets
+these requirements. If a property is violated, the verification tool may produce
+a warning, detailing the cause. This allows developers to trace the problem,
+correct the issue, and re-verify the program. This process is deeply embedded
+into the field of computer science.
 
-== Problem Definition
+*The problem* that is thesis will address is the current lack of text tooling
+for the OWL community. A first step towards a solution to this problem is a new
+text tool for the human-readable variant "OWL 2 Mancherster
+Syntax"@OWLWebOntologya of the OWL language family.
 
-The problem that is thesis will address is the current lack of text tooling for
-the OWL community.
-#todo(inline: true)[
-  TODO schreiben
-
-  was ist das problem? Keine tools oder kein wissen?
-]
-
-== Research Objective
-
-// How to design and implement an efficient language server for the owl language
-
-To aid future developers of language server for small scale languages this
-thesis will answer the following research questions while documenting which data
-structures, techniques and protocols are best suited, and the performance
-characteristics of different alternatives. #todo[Ob das noch in die Arbeit passt?]
-
-#show figure.where(kind: "RQ"): it => box(width: 100%)[
-  #it.body
-]
-
-#figure(
-  kind: "RQ", supplement: "RQ", numbering: "1",
-)[
-  #grid(
-    columns: (auto, auto), gutter: 2pt, [*RQ 1:*], [How to develop a language server for a known lanugage that satifies the user in
-      need for features while not slowing him down?],
-  )
-]<rq_1>
-
-#figure(
-  kind: "RQ", supplement: "RQ", numbering: "1",
-)[
-  *RQ 2:* How does a text editor with a language server compare to a specialised
-  editor.
-]<rq_2>
-
-The goal of this research is to create a reference implementation for a language
-server that has a known grammar. The research is conducted on an open source
-language server for the open source semantic web language "OWL 2 Manchester
-Syntax"@OWLWebOntologya. The language server will provide diagnostics, hover,
+*The goal* of this thesis is to make the OWL Manchester Syntax in text form more
+accessible to developers by integrating it into their workflows via an
+Integrated Development Environment (IDE) plugin. By implementing the
+functionality as a Language Server Protocol (LSP) server named "owl-ms-languge-server"
+and an LSP client plugin for Visual Studio Code named "vscode-owl-ms", the tool
+can be easily adapted for use in other IDEs. This integration allows the
+owl-ms-language-server to be run directly from within the IDE, with results
+displayed in the editor. The language server will provide diagnostics, hover,
 semantic tokens and jump to definition features. A small qualitative user study
 will show whether the implementation is able to keep up with the users
 expectations in a synthetic scenario. It should be fast enough and feature rich
 to work with. The scenario can not be a real-world one, because the chosen
-language does not have an established text based workflow yet. Not to the
-knowledge of this author.
+language does not have an established text based workflow yet.
 
-== Non-Goals
+*The research question* this thesis will answer while documenting which data
+structures, tech stacks and packages are best suited, and the performance
+characteristics of them is: "How to develop a language server for a known
+lanugage that satifies the user in need for features while not slowing him
+down?".
+
+// #show figure.where(kind: "RQ"): it => box(width: 100%)[
+//   #it.body
+// ]
+
+// #figure(
+//   kind: "RQ", supplement: "RQ", numbering: "1",
+// )[
+//   #grid(
+//     columns: (auto, auto), gutter: 2pt, [*RQ 1:*], [How to develop a language server for a known lanugage that satifies the user in
+//       need for features while not slowing him down?],
+//   )
+// ]<rq_1>
+
+// #figure(
+//   kind: "RQ", supplement: "RQ", numbering: "1",
+// )[
+//   *RQ 2:* How does a text editor with a language server compare to a specialised
+//   editor.
+// ]<rq_2>
 
 This implementation is specific to the OWL language. The grammar covers the
 complete Manchester Syntax but without extensions and limits in dependent
@@ -148,13 +157,79 @@ Github repositories. This is also the case for this typst document.
 
 = Related work <chapter:related_work>
 
-@sanderDesignImplementationLanguage
-@leimeisterLanguageServerIDE
+The goal of this work is to implement a simple language server with a
+corresponding Visual Studio Code plugin. There are countless language servers
+that precede this work, but most of them do not have a publication that belongs
+to them. A list of language servers can be found on the page great
+https://langserver.org/. Nevertheless, there are some papers about writing a
+language server, and here are two of them.
 
-#todo(inline: true)[TOOD sander Design Implementation Language]
-#todo(inline: true)[TODO leimeister Language Server IDE]
+In the work "A Language Server and IDE Plugin for
+CPAchecker"@leimeisterLanguageServerIDE by Adrian Leimeister a language server
+is built for the already existing tool
+"CPAchecker". The server is written in Java to be able to talk directly to
+CPAchecker. In this case, CPAchecker is even integrated as a library and is only
+started directly via the Java class. The server also has an integration with "VerifierCloud",
+an online service for verification. To run the CPAchecker, a configuration must
+be specified, which caused some difficulties because the library did not make
+certain methods publicly available. The stdio logging was also redirected to the
+language server via "logMessage" notifications. This is necessary because
+language servers communicate with the client via stdio. For communication via
+the LSP, the language server uses the LSP4J library, a Java implementation of
+the LSP. This provides an interface that implements the class "CPAchekerLSP".
+The language server takes the document that was sent via "didSave", analyzes it
+using the CPAchecker and sends back a "publishDiagnostics" notification. The
+whole thing can also be verified via the cloud when configured. The eclipse
+plugin is based on the generic languge client LSP4E. It is installed via an
+update site. The plugin is built automatically via Apache Maven and Eclipse
+Tycho. Due to conflicts between the OSGi manifest and Maven manifest, a
+workaround had to be implemented. The work used an online survey of potential
+users as an evaluation. After an installation and configuration guide, the
+participants were asked to follow a basic usage scenario and then try out the
+tool themselves. The questionnaire mainly contained questions about the
+installation and configuration process, general usage and presentation of the
+results. Improvements were then implemented. The work concludes with suggestions
+for improvements to other IDEs, more flexible configuration, improved
+presentation and the addition of a debug adapter. In comparison, the
+CPAcheckerLSP and the owl-ms-language-server are similar. Both implement a
+language server and both integrate into an IDE with simple plugins. Technically,
+of course, the projects are very different, but the two approaches to source
+code analysis are particularly contrasting. While the OWL language server only
+processes syntax and provides e.g. goto's by means of the syntax tree, the
+CPAchecker language server uses a complete diagnostic tool in the background.
+This makes it more powerful in diagnostics but weaker in the other LSP features.
+It also lacks incremental parsing.
 
-#lorem(100)
+In the paper by Yannik Sander entitled "Design and Implementation of the
+Language Server Protocol for the Nickel
+Language"@sanderDesignImplementationLanguage, CPAcheckerLSP is categorized as an "interface
+to an existing tool". The work is an excellent source that gives a fantastic
+introduction to the topic as well as a rough overview of other work. In
+subsection 3.2 you will find some language servers that have been categorized.
+At this point I would like to highlight this as a brilliant secondary source.
+The thesis also deals with the implementation of a nickel language server. Like
+the language server itself, this is written in rust, which facilitates
+integration by allowing parts of the language analysis to be reused. The
+disadvantage, however, is that the implemented language server will not support
+incremental parsing because the existing components on which it is based do not
+support this feature. The paper discusses a lazy and an eager approach that
+comes close to [ref needed]. Basically, the author comes to the same conclusion
+that “Ahead of time analysis” (eager) is more responsive than lazy after a
+direct lookup. But the Nickel language server should also be
+language-independent. To achieve this, it introduces an abstraction, the
+“Linearizer” trait. It is the interface between Nickel and the language server,
+which converts source code into the representation called Linearization. The
+approach is not comparable with traditional analysis of abstract syntax trees,
+as used by the owl-ms-language-server. The Nickel language server is implemented
+using the “lsp-server” rust crate/package. This also works as usual via a
+“didOpen” notification and a subsequent “diagnostics” push notification. The
+linearization is cached for each file. This information is also used if the file
+is being edited and is in an invalid state. Furthermore, the LSP implements the
+server commands hover, jump to reference, show reference, completion and
+document symbols using the same linearization. This server also has a usability
+evaluation. It was carried out in a workshop with a survey. There is also a
+performance evaluation. Part of this is also an analysis of different LSP
+requests.
 
 = Background <background>
 
@@ -165,7 +240,7 @@ go over how IDE's used to work and what modern text editors do different.
 Afterwards I will say something about tree sitter, the parser generator that was
 used.
 
-== What is Owl, Owl 2 and Owl 2 manchester syntax
+== Owl 2 Manchester Syntax
 
 // TODO What it OWL 1
 
@@ -210,7 +285,35 @@ about.
   Manchester syntax.
 ]
 
-== How IDE's work
+== IDE's
+
+#figure(
+  caption: [The problem: "The Matrix"],
+)[
+  #j-table(
+    columns: (auto, auto, auto, auto, auto), table.header([], [Go], [Java], [TypeScript], [...]),
+    // ---------------------
+    [Emacs], [], [], [], [],
+    // ---------------------
+    [Vim], [], [], [], [],
+    // ---------------------
+    [VSCode], [], [], [], [],
+    // ---------------------
+    [...], [], [], [], [],
+  )
+]
+
+#figure(
+  caption: [The solution: language server and clients],
+)[
+  #grid(
+    columns: 2, gutter: 2mm, j-table(
+      columns: (auto), table.header([*Server*]), [Go], [Java], [TypeScript], [...],
+    ), j-table(
+      columns: (auto), table.header([*Client*]), [Emacs], [Vim], [VSCode], [...],
+    ),
+  )
+]
 
 IDE's use syntax trees to deliver language smarts to the programmer. The problem
 with IDE's is that they are focused on specific languages or platforms. They are
@@ -219,12 +322,12 @@ the IDE is parsing the whole file. This can take 100 milliseconds or longer,
 getting slower with larger files. This delay can be felt by programmers while
 typing. @loopTreesitterNewParsing
 
-== What is a language server
+== Language Server
 // https://www.thestrangeloop.com/2018/tree-sitter---a-new-parsing-system-for-programming-tools.html 4:05
 
 #lorem(100)
 
-== What is tree sitter
+== Tree Sitter
 
 Tree-sitter is a parser generator and query tool for incremental parsing. It
 builds a deterministic parser for a given grammar that can parse a source file
@@ -249,7 +352,7 @@ All these features make it extremely useful for parsing code that is constantly
 modified and contains syntactical errors, like source code, written inside code
 editors.
 
-== What makes a parser a GLR parser
+== GLR parser
 
 GLR parsers (generalized left-to-right rightmost derivation parser) are more
 general LR Parsers that handle non-deterministic or unambiguous grammars.
@@ -287,7 +390,7 @@ A language server needs a good parser and when there is no incremental error
 recovering parser it needs to be build. The parser generator chosen for this
 language server is tree sitter.
 
-=== Why use tree sitter
+=== Why Tree Sitter
 
 I chose three sitter, because it is an incremental parsing library. This is a
 must because the OMN files can be very large. Parsing a complete file after only
@@ -374,7 +477,7 @@ The package responsible for parsing in the owlapi is `org.semanticweb.owlapi.man
 For these reasons I ended up writing a custom parser. The next chapter will show
 how this was done.
 
-=== Writing the grammar
+=== Tree Sitter Grammar
 
 Staring with the official reference of the OWL2 manchester syntax
 @OWLWebOntologya, I transformed the rules into tree sitter rules, replacing the
@@ -579,7 +682,7 @@ queries and bindings. The queries are for folds, highlights and indents; the
 bindings are for node and rust. The latter defines a crate/package which the
 language server imports as a submodule and uses as a local dependency.
 
-== Getting started with the LSP specification and its Rust implementation
+== LSP specification and Rust implementation
 
 // TODO who defines the specification
 Microsoft defines the LSP specification (Version 3.17) on a GitHub page./* TODO reference LSP specification */ The
@@ -1257,22 +1360,67 @@ The source code of that function can be found in this rust file
   ],
 )<image:inlay_hints>
 
-== `completions`
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
+== `textDocument/completion` Request
 
-// TODO how the node kinds are converted into completion items
-// TODO how the parent node is queried and used with static nodes
+This request is sent from the client to the server to request completion items
+under the cursor of a specific text document. The parameter contains the text
+document identifier and position. The completion items are presented in the user
+interface as a list of possible completions.
+
+```ts
+// The completion Response is just a CompletionItem[]
+
+export interface CompletionItem {
+  label: string;
+  // ... huge number of unsed properties
+}
+```
+
+The completion function takes the document and searches for the deepest node at
+the cursor position in the syntax tree and creates a cursor there. As long as
+the node is an error, the cursor goes to the parent. To get the possible
+keywords, the function now uses the node type DashMap to look up the current
+node. If found, the possible child nodes are collected here. This is very
+similar to diagnostics, where the same procedure is used to genreate a syntax
+error message. Here, the possible nodes become a completion item by turning the
+node kind into a keyword. There is done in a large lookup function called `node_type_to_keyword(tipe: &str) -> Option(String)` (Unfortunately, `type` is
+a reserved keyword, so `tipe` is used here instead). When writing the grammar,
+it was not yet clear that it should have a separate rule for each keyword, so
+unfortunately not all keywords can be used here. This problem must be solved in
+the next version of the grammar.The list of possible IRIs is created based on
+the previously found parent node. If this node is a `simple_iri`, an IRI
+containing the item text is searched for in the `iri_info_map`. Afterward, it
+was noticed that this is not sufficient. On the one hand, it should also be
+possible to complete other types of IRIs. On the other hand, the `iri_info_map` is
+not equipped with all IRIs from the file. That is why this type of completion
+does not always work. At the end, the two lists are merged. This works because `simple_iri` has
+no child node in the node types.
+
+```rust
+async fn completion(&self, params: CompletionParams) -> Result<Option<CompletionResponse>> {
+    // Get the document from self.document_map
+    // Find node under cursor
+    // Generate keyword list that can be applied
+    //     This also works with node types like diagnostics
+    //     Note that this is missing some keywords because of limitations in the grammar
+    // Generate a list of IRIs that can be inserted
+    // Combine lists and return the completions items
+}
+```
+The source code of that function can be found in this rust file
+#link(
+  "https://github.com/janekx21/owl-ms-language-server/blob/c39761487c920dcaf65720947ab8e2345e2bec1f/src/main.rs#L626",
+)[owl-ms-language-server/src/main.rs\#L626].
 
 #figure(
-  image("assets/screenshot_vscode_completion_iri.svg", width: 100%), caption: [
-    TODO
+  image("assets/screenshot_vscode_completion_keyword.svg", width: 100%), caption: [
+  Completion list items of keywords after typing `Ann`
   ],
 )
 
 #figure(
-  image("assets/screenshot_vscode_completion_keyword.svg", width: 100%), caption: [
-    TODO
+  image("assets/screenshot_vscode_completion_iri.svg", width: 100%), caption: [
+  Completion list items of simple IRIS after typing `pizz`
   ],
 )
 
