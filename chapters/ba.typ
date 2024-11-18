@@ -712,9 +712,10 @@ language server imports as a submodule and uses as a local dependency.
 == LSP specification and Rust implementation
 
 // TODO who defines the specification
-Microsoft defines the LSP specification (Version 3.17) on a GitHub page./* TODO reference LSP specification */ The
-page contains the used base protocol and its RPC methods using typescript types.
-The @lsp_lifecycle shows a typical LSP lifecycle.
+Microsoft defines the LSP specification (Version 3.17)@LanguageServerProtocol on
+a GitHub page./* TODO reference LSP specification */ The page contains the used
+base protocol and its RPC methods using typescript types. The @lsp_lifecycle
+shows a typical LSP lifecycle.
 
 #figure(
   caption: [An overview of the LSP lifecycle], kind: image,
@@ -1859,27 +1860,78 @@ faster than blind parsing. A five to tenfold acceleration is to be expected.
 
 == Evaluation of the usability <evaluation>
 
-=== Experimental Setup
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
+As part of this thesis the language server was given to ontology experts that
+tried working with the tool. They were written to via email and introduced to
+the evaluation form which explained the installation and prompted to try the
+tool. The results where collected anonymously and without personal data. The
+participants were given a questionnaire that examined specific language server
+features, bug-free operation and how the tool can affect their own workflow. The
+questions where inspired by the thesis for the CPAchecker language
+server@leimeisterLanguageServerIDE. The full evaluation form can be found in
+@evaluation_form.
 
 === Results
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
-//TODO who are the users
-//TODO describe the usability
-//TODO is the LSP fast enough
+
+Starting with the background all participants where developing ontologies using
+the Protégé visual editor and 75% of them where using the owl-ms-language-server
+for around 10 minutes; one for around 30 minutes. Everyone described the
+installation process as very easy. This was very pleasing, because installing a
+language server can be very complex. In this case, a lot of energy went into
+making the process smooth. The question about experienced performance where also
+100% very positive. This was to be expected, as my performance tests showed
+comparable results. The question on how well the goals of the developer could be
+achieved using the language server saw a mix of low and high result. The
+question on general experience was also pretty mixed with two participants
+voting for neutral and two voting for very good. The hover information got a
+neutral vote and three good votes, making it average. Surprisingly the syntax
+error diagnostic question saw very good results with just one vote on good and
+the other three on very good. This came as something of a surprise because it
+was never certain that the detection of syntax errors and the corresponding
+message was genuinely good. The same results where also found on the inlay
+hinting question. Inlay hinting was one of the focuses of this work and this
+survey shows it. The question about auto-completion got a good but only one very
+good results. The question about the bugs a user encountered got one answer.
+
+#quote(
+  block: true,
+)[
+  Some things don't seem to be affected by text-highlighting: e.g.
+
+  OEO_00020426 "issue: https://github.com/OpenEnergyPlatform/ontology/issues/725
+  pull request: https://github.com/OpenEnergyPlatform/ontology/pull/757"
+
+  "issue: https://github.com/OpenEnergyPlatform/ontology/issues/725 is green, like
+  text in quotations should be, according to examples above
+
+  whereas pull request: https://github.com/OpenEnergyPlatform/ontology/pull/757"
+  is white just like OEO_00020426
+
+  After testing some more, I'm pretty sure a line break also breaks the
+  highlighting. This is especially distracting in very long comments.
+]
+
+The bug could be reproduced and is likely linked to the client capability
+`multilineTokenSupport`. As stated in the LSP
+specification@LanguageServerProtocol[Semantic Tokens], the semantic tokens, that
+produce syntax highlighting in most editors, can only span multiple lines when
+the client capability `multilineTokenSupport` is set. When not supported and a
+token goes past the line end, it should be treated like the end of the token and
+a new token should start at the next line to wrap around. This was not
+implemented yet, and therefore the next line does not get the correct syntax
+highlighting.
+
+The question about missing features in the tool got two answers.// TODO hier weiter !!!!!!!!!!!!!!
 
 = Conclusion
 
 // TODO
-- It was hard to track each syntax thing like keywords and rules.
-- Changing the grammar has a large impact.
+- Rust and tree sitter are good software for LSP's
+- The build language server is realtime
+- The build language server produces good syntax errors
+- The build language servers best feature is the inlay hinting
+- It was hard to track each syntax thing like keywords and rules
+- Changing the grammar has a large impact
 
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
-
-== Performance
 #todo(inline: true)[TODO schreiben]
 #lorem(100)
 
@@ -1887,11 +1939,13 @@ faster than blind parsing. A five to tenfold acceleration is to be expected.
 #todo(inline: true)[TODO schreiben]
 #lorem(100)
 
-- Mono Repo for easy releases
-- More features (see list in repo)
-- More tests (of queries for example)
-- Fetching external ontolgies
-- Create class code action when class iri is not found
+- Mono Repo for easy releases (this is just technical dept)
+- Move to Rustup stable tool-chain to ease the installation
+- Implement more features (see list in repo)
+- Write more tests (of queries for example)
+- Fetching external ontologies
+- Create class code action when class IRI is not found
+- Fix bugs
 
 // = Appendix
 
