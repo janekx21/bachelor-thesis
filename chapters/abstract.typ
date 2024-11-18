@@ -8,4 +8,4 @@ for the OWL 2 Manchester syntax/notation (OMN) using the incremental parser
 generator tree sitter. It provides language features like auto complete, go to
 definition and inlay hints, which are critical in large OMN files, as it would
 be tedious and error-prone without a graphical editor. I also evaluated the
-practical relevance of the LSP.
+practical relevance of the LSP implementation.

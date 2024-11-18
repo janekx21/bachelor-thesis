@@ -291,41 +291,57 @@ about.
   caption: [The problem: "The Matrix"],
 )[
   #j-table(
-    columns: (auto, auto, auto, auto, auto), table.header([], [Go], [Java], [TypeScript], [...]),
+    columns: (auto, auto, auto, auto, auto, auto), table.header([], [Go], [Java], [TypeScript], [...], [Language $n$]),
     // ---------------------
-    [Emacs], [], [], [], [],
+    [Emacs], [Plugin 1], [Plugin 2], [Plugin 3], [...], [Plugin $n$],
     // ---------------------
-    [Vim], [], [], [], [],
+    [Vim], [Plugin $n+1$], [Plugin $n+2$], [Plugin $n+3$], [...], [Plugin $2n$],
     // ---------------------
-    [VSCode], [], [], [], [],
+    [VSCode], [Plugin $2n+1$], [Plugin $2n+2$], [Plugin $2n+3$], [...], [Plugin $3n$],
     // ---------------------
-    [...], [], [], [], [],
+    [...], [...], [...], [...], [...], [...],
+    // ---------------------
+    [IDE $m$], [...], [...], [...], [...], [Plugin $n*m$],
   )
-]
+]<table:the_problem>
+
+Integrated development environments (IDE's) use syntax trees to deliver language
+smarts to the programmer. The problem with IDE's is that they are focused on
+specific languages or platforms. They are usually slow due to not using
+incremental parsing. This means on every keystroke the IDE is parsing the whole
+file. This can take 100 milliseconds or longer, getting slower with larger
+files. This delay can be felt by programmers while typing
+@loopTreesitterNewParsing. Because IDE's focus on single languages they need
+plugins to support more languages. The @table:the_problem shows there is a need
+for $n*m$ plugins when having $n$ languages an $m$ IDE's and every editor is
+supporting every language.
+
+== Language Server
+// https://www.thestrangeloop.com/2018/tree-sitter---a-new-parsing-system-for-programming-tools.html 4:05
 
 #figure(
   caption: [The solution: language server and clients],
 )[
   #grid(
     columns: 2, gutter: 2mm, j-table(
-      columns: (auto), table.header([*Server*]), [Go], [Java], [TypeScript], [...],
+      columns: (auto, auto), table.header([*Language*], [*Server*]),
+      //
+      [Go], [Server 1], [Java], [Server 2], [TypeScript], [Server 3], [...], [...], [Language $n$], [Server $n$],
     ), j-table(
-      columns: (auto), table.header([*Client*]), [Emacs], [Vim], [VSCode], [...],
+      columns: (auto, auto), table.header([*Language*], [*Client*]), [Emacs], [Client 1], [Vim], [Client 2], [VSCode], [Client 3], [...], [...], [IDE $m$], [Client $m$],
     ),
   )
 ]
 
-IDE's use syntax trees to deliver language smarts to the programmer. The problem
-with IDE's is that they are focused on specific languages or platforms. They are
-usually slow due to not using incremental parsing. This means on every keystroke
-the IDE is parsing the whole file. This can take 100 milliseconds or longer,
-getting slower with larger files. This delay can be felt by programmers while
-typing. @loopTreesitterNewParsing
-
-== Language Server
-// https://www.thestrangeloop.com/2018/tree-sitter---a-new-parsing-system-for-programming-tools.html 4:05
-
-#lorem(100)
+An alternative to traditional IDEs are language servers. With language servers,
+the code is created with a language agnostic source code editor and a separate
+program analyzes this code. This gives the text editor typical IDE features such
+as go to definition or autocomplete, reducing the problem of huge plugins counts
+to the number of editors plus languages. Nevertheless, a language server cannot
+replace every IDE because the feature set is fixed, an additional transport
+layer is introduced, and new dependencies are added that are not integrated like
+in an IDE. In addition, most language servers work similarly to IDEs and parse
+the entire file with every keystroke.@loopTreesitterNewParsing
 
 == Tree Sitter
 
@@ -383,6 +399,17 @@ grammatical constrains that LR parsing comes with
 This chapter will explain what was implemented and how it was done. I will also
 show why I choose the tools that I did, what alternatives exist and when to use
 those.
+
+#figure(caption: [Architecture overview], kind: image)[
+```pintora
+componentDiagram
+
+[VSCode] --> [vscode-owl-ms] : has plugin
+[vscode-owl-ms] ..> LSP
+LSP ..> [owl-ms-language-server]
+[owl-ms-language-server] --> [tree-sitter-owl-ms] : has dependency
+```
+]
 
 == Parsing
 
@@ -1420,13 +1447,17 @@ The source code of that function can be found in this rust file
 
 #figure(
   image("assets/screenshot_vscode_completion_iri.svg", width: 100%), caption: [
-  Completion list items of simple IRIS after typing `pizz`
+  Completion list items of simple IRIs after typing `pizz`
   ],
 )
 
 == Used data structures
-#todo(inline: true)[TODO schreiben]
-#lorem(50)
+
+Data structures can have advantages and disadvantages. In the case of this work,
+a simple change of the string data structure, inspired by the helix editor,
+results in a theoretical asymptotic runtime improvement. The following chapter
+explains why and how the Rope data structure works. This is followed by a brief
+explanation of what a DashMap is.
 
 === Rope
 
@@ -1604,6 +1635,11 @@ cause a tree query to traverse the whole document/workspace. Caching on the
 other hand has the implication of constantly updating the state. The
 disadvantage, it's more likely to be bugged than an ad hoc query.
 
+Yannik Sander discussed the same problem in his work "Design and Implementation
+of the Language Server Protocol for the Nickel
+Language"@sanderDesignImplementationLanguage in Chapter 4.2.3 Code Analysis. He
+calles it lazy and eager analysis.
+
 = Analysis <analysis>
 #todo(inline: true)[TODO schreiben]
 #lorem(50)
@@ -1630,6 +1666,7 @@ found in the `test/corpus/*.txt` files and are executed by running `npm test`.
 Each test entry takes the form of a test name, text and expected tree. The
 following test is a simple example of a typical `*.omn` file beginning.
 
+#figure(caption: [Simple grammar test], placement: top)[
 ```
 ======================
 Class Frame SubClassOf
@@ -1649,6 +1686,7 @@ Ontology:
         (description
           (class_iri (abbreviated_iri)))))))
 ```
+]
 
 Each entry in a test file starts with a line with just `=` (equal sign)
 characters followed by a name followed by a line with just `=` (equal sign)
@@ -1668,8 +1706,30 @@ Tree sitter also supports testing syntax highlighting, but this project does not
 use it.
 
 === Integration tests in rust
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
+Integration tests can be found in the rust project of the language server. They
+check the interaction between the implemented language server trait and the tree
+sitter parser with its grammar. No stubs or mocks were used for the state of the
+server. Here you can test whether the server parses correctly, whether it
+correctly accepts the individual requests and whether its internal state is
+up-to-date.
+
+#figure(caption: [Simple parsing test], placement: top)[
+```rust
+#[test]
+fn test_parse() {
+    let mut parser = Parser::new();
+    parser.set_language(*LANGUAGE).unwrap();
+
+    let source_code = "Ontology: Foobar";
+    let tree = parser.parse(source_code, None).unwrap();
+
+    assert_eq!(
+        tree.root_node().to_sexp(),
+        "(source_file (ontology (ontology_iri (simple_iri))))"
+    );
+}
+```
+]
 
 == Benchmarks <benchmarks>
 There are two kinds of speed measurements. The first kind is cargo benchmarks
@@ -1687,7 +1747,7 @@ section after that is about the results of the benchmarks.
 === Experimental Setup
 
 #figure(
-  caption: [Rust benchmark "ontology_size_bench"],
+  caption: [Rust benchmark "ontology_size_bench"], placement: top,
 )[
 ```rust
 fn ontology_size_bench(c: &mut Criterion) {
@@ -1703,7 +1763,6 @@ fn ontology_size_bench(c: &mut Criterion) {
                             .repeat(size)
                             .as_str(),
                     );
-
                     let mut parser = Parser::new();
                     parser.set_language(language()).unwrap();
                     (source_code.to_string(), parser)
@@ -1715,7 +1774,6 @@ fn ontology_size_bench(c: &mut Criterion) {
     }
     group.finish();
 }
-
 fn parse_helper(source_code: &String, parser: &mut Parser) {
     parser.reset();
     parser.parse(source_code, None).unwrap();
@@ -1723,24 +1781,8 @@ fn parse_helper(source_code: &String, parser: &mut Parser) {
 ```
 ]<code:benchmark_ontology_size>
 
-As can be seen in the @code:benchmark_ontology_size, a temporary ontology is
-created in the “ontology_size_bench”, which is variable in size from 100 to 4000
-class frames and named input size (elements). Each benchmark is given a name. In
-this case ontology_size_bench/\<number of class frames\>. Each benchmark is run
-for at least 60 seconds to obtain at least 100 samples. The number of iterations
-can therefore be very high. Up to 30 thousand for fast benchmarks. For some
-benchmarks, it is also possible that 100 samples cannot be taken because it
-would take longer than 60 seconds. In this case, the length of the benchmarks is
-increased. This can be over 100 seconds for some.
-
-The second benchmark from @code:ontology_change_bench is similar. It also
-creates a temporary ontology with a variable size named input size (elements)
-that is the number of class frames in the ontology that will be parsed. However,
-the benchmark performs the parsing in advance and then measures the time
-required for a change. In this case, no change is even made at all.
-
 #figure(
-  caption: [Rust benchmark "ontology_change_bench"],
+  caption: [Rust benchmark "ontology_change_bench"], placement: top,
 )[
 ```rust
 fn ontology_change_bench(c: &mut Criterion) {
@@ -1775,6 +1817,22 @@ fn re_parse_helper(source_code: &String, parser: &mut Parser, old_tree: &Tree) {
 }
 ```
 ]<code:ontology_change_bench>
+
+As can be seen in the @code:benchmark_ontology_size, a temporary ontology is
+created in the “ontology_size_bench”, which is variable in size from 100 to 4000
+class frames and named input size (elements). Each benchmark is given a name. In
+this case ontology_size_bench/\<number of class frames\>. Each benchmark is run
+for at least 60 seconds to obtain at least 100 samples. The number of iterations
+can therefore be very high. Up to 30 thousand for fast benchmarks. For some
+benchmarks, it is also possible that 100 samples cannot be taken because it
+would take longer than 60 seconds. In this case, the length of the benchmarks is
+increased. This can be over 100 seconds for some.
+
+The second benchmark from @code:ontology_change_bench is similar. It also
+creates a temporary ontology with a variable size named input size (elements)
+that is the number of class frames in the ontology that will be parsed. However,
+the benchmark performs the parsing in advance and then measures the time
+required for a change. In this case, no change is even made at all.
 
 It's expected that an incremental parser only parses the changed sections and
 delivers a $O(1)$ runtime complexity on an unchanged source, but the results
