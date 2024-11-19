@@ -10,10 +10,10 @@
 
 Symbolic expressions are expressions inside tree structures. They were invented
 and used for lisp languages, where they are data structures and source code.
-Tree sitter uses them, with some extended syntax, to display syntax trees and
+Tree-sitter uses them, with some extended syntax, to display syntax trees and
 for queries. An S-expression is either an atom like `x` or an S-expression of
 the form `(x y)`. A long list would be written as `(a (b (c (d NIL))))`, where `NIL` is
-a special end of list atom, but tree sitter unrolls those lists into `(a b c d)`.
+a special end of list atom, but tree-sitter unrolls those lists into `(a b c d)`.
 
 ```lisp
 (root (leaf) (node (leaf) (leaf)))
@@ -54,10 +54,10 @@ following tree.
   )
 ]
 
-Tree sitter uses a range syntax to show where the syntax tree nodes lay within
+Tree-sitter uses a range syntax to show where the syntax tree nodes lay within
 the source code. The range is represented using a start and an end position,
 both are written using zero based row and column positions. For example, the
-following S-expression could be a syntax tree result from tree sitter.
+following S-expression could be a syntax tree result from tree-sitter.
 
 ```lisp
 (root [0, 0] - [4, 0]

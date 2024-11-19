@@ -31,8 +31,8 @@ section = "Section"
 thesis = "Thesis"
 
 [en.title-page]
-first-reviewer = "First Reviewer"
-second-reviewer = "Second Reviewer"
+first-reviewer = "2nd Examiner"
+second-reviewer = "2nd Examiner"
 supervisor = "Supervisor"
 
 [en.bibliography]

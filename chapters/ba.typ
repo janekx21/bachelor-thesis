@@ -33,21 +33,21 @@ Extensive test suites are run during development to evaluate a component's
 behavior under various inputs and conditions. While testing can reveal many
 errors, it cannot guarantee the absence of all defects or ensure the overall
 correctness of the program. As noted by Beyer and Lemberger in "Software
-Verification: Testing vs. Model Checking"#todo[hier muss ref hin] , formal
-verification should complement testing to provide a more robust assurance of
-program correctness. Formal verification requires a specification of the desired
-behavior, which the verification tool then uses to check if the program meets
-these requirements. If a property is violated, the verification tool may produce
-a warning, detailing the cause. This allows developers to trace the problem,
-correct the issue, and re-verify the program. This process is deeply embedded
-into the field of computer science.
+Verification: Testing vs. Model Checking"@beyerSoftwareVerificationTesting2017,
+formal verification should complement testing to provide a more robust assurance
+of program correctness. Formal verification requires a specification of the
+desired behavior, which the verification tool then uses to check if the program
+meets these requirements. If a property is violated, the verification tool may
+produce a warning, detailing the cause. This allows developers to trace the
+problem, correct the issue, and re-verify the program. This process is deeply
+embedded into the field of computer science.
 
 *The problem* that is thesis will address is the current lack of text tooling
 for the OWL community. A first step towards a solution to this problem is a new
-text tool for the human-readable variant "OWL 2 Mancherster
+text tool for the human-readable variant "OWL 2 Manchester
 Syntax"@OWLWebOntologya of the OWL language family.
 
-*The goal* of this thesis is to make the OWL Manchester Syntax in text form more
+*The goal* of this thesis is to make the OWL Manchester syntax in text form more
 accessible to developers by integrating it into their workflows via an
 Integrated Development Environment (IDE) plugin. By implementing the
 functionality as a Language Server Protocol (LSP) server named "owl-ms-languge-server"
@@ -88,9 +88,9 @@ down?".
 // ]<rq_2>
 
 This implementation is specific to the OWL language. The grammar covers the
-complete Manchester Syntax but without extensions and limits in dependent
+complete Manchester syntax but without extensions and limits in dependent
 syntaxes like RFC-3629@rfc-3629. In addition, only a small subset of possible
-language features is implemented, because of time constrains. It is not my goal
+language features is implemented, because of time constrains. It is not the goal
 to create a full OWL language server tool that covers every use case. For that
 reason a prioritized list with LSP features guided the implementation order.
 
@@ -121,10 +121,10 @@ formatting, linked editing range (Ranges that have the same content) and Symbol
 // first explain what the work i am doing is and
 
 After the introduction and related work chapters, the thesis begins with
-background information about OWL2, the manchester syntax, IDE's and language
+background information about OWL2, the Manchester syntax, IDE's and language
 servers in the @background. This wide background is followed by detailed
-information about my implementation of a language server in @implementation.
-What my decisions where and why. It involves translating a grammar, creating a
+information about the implementation of a language server in @implementation.
+What the decisions where and why. It involves translating a grammar, creating a
 language server crate/package and a plugin example for Visual Studio Code.
 @analysis is about testing the created program by running grammar tests,
 integration tests and benchmarks. Then analyzing and evaluating the results in
@@ -140,7 +140,7 @@ Github repositories. This is also the case for this typst document.
   - Distributed PDF (main.pdf)\
     https://github.com/janekx21/bachelor-thesis/releases
 
-- Parser generator (tree sitter grammar)\
+- Parser generator (tree-sitter grammar)\
   https://github.com/janekx21/tree-sitter-owl-ms
 
 - langauge server (rust crate/package)\
@@ -206,43 +206,40 @@ Language"@sanderDesignImplementationLanguage, CPAcheckerLSP is categorized as an
 to an existing tool". The work is an excellent source that gives a fantastic
 introduction to the topic as well as a rough overview of other work. In
 subsection 3.2 you will find some language servers that have been categorized.
-At this point I would like to highlight this as a brilliant secondary source.
-The thesis also deals with the implementation of a nickel language server. Like
-the language server itself, this is written in rust, which facilitates
-integration by allowing parts of the language analysis to be reused. The
-disadvantage, however, is that the implemented language server will not support
-incremental parsing because the existing components on which it is based do not
-support this feature. The paper discusses a lazy and an eager approach that
-comes close to [ref needed]. Basically, the author comes to the same conclusion
-that “Ahead of time analysis” (eager) is more responsive than lazy after a
-direct lookup. But the Nickel language server should also be
-language-independent. To achieve this, it introduces an abstraction, the
-“Linearizer” trait. It is the interface between Nickel and the language server,
-which converts source code into the representation called Linearization. The
-approach is not comparable with traditional analysis of abstract syntax trees,
-as used by the owl-ms-language-server. The Nickel language server is implemented
-using the “lsp-server” rust crate/package. This also works as usual via a
-“didOpen” notification and a subsequent “diagnostics” push notification. The
-linearization is cached for each file. This information is also used if the file
-is being edited and is in an invalid state. Furthermore, the LSP implements the
-server commands hover, jump to reference, show reference, completion and
-document symbols using the same linearization. This server also has a usability
+This was a brilliant secondary source. The thesis also deals with the
+implementation of a nickel language server. Like the language server itself,
+this is written in rust, which facilitates integration by allowing parts of the
+language analysis to be reused. The disadvantage, however, is that the
+implemented language server will not support incremental parsing because the
+existing components on which it is based do not support this feature. The paper
+discusses a lazy and an eager approach that comes close to [ref needed].
+Basically, the author comes to the same conclusion that “Ahead of time analysis”
+(eager) is more responsive than lazy after a direct lookup. But the Nickel
+language server should also be language-independent. To achieve this, it
+introduces an abstraction, the “Linearizer” trait. It is the interface between
+Nickel and the language server, which converts source code into the
+representation called Linearization. The approach is not comparable with
+traditional analysis of abstract syntax trees, as used by the
+owl-ms-language-server. The Nickel language server is implemented using the
+“lsp-server” rust crate/package. This also works as usual via a “didOpen”
+notification and a subsequent “diagnostics” push notification. The linearization
+is cached for each file. This information is also used if the file is being
+edited and is in an invalid state. Furthermore, the LSP implements the server
+commands hover, jump to reference, show reference, completion and document
+symbols using the same linearization. This server also has a usability
 evaluation. It was carried out in a workshop with a survey. There is also a
 performance evaluation. Part of this is also an analysis of different LSP
 requests.
 
 = Background <background>
 
-In this chapter I will explain programs, libraries, frameworks and techniques
-that are important to this work. You can skip parts that you are familiar with.
-We start with the ontology language this language server will support. Then we
-go over how IDE's used to work and what modern text editors do different.
-Afterwards I will say something about tree sitter, the parser generator that was
-used.
+This chapter will explain programs, libraries, frameworks and techniques that
+are important to this work. You can skip parts that you are familiar with. We
+start with the ontology language this language server will support. Then we go
+over how IDE's used to work and what modern text editors do different. This is
+followed by an explanation of the parser generator ,tree-sitter, that was used.
 
 == Owl 2 Manchester Syntax
-
-// TODO What it OWL 1
 
 To understand what OWL 2, the second version of the OWL language, is, let's hear
 from the authors of this semantic web language.
@@ -256,10 +253,9 @@ from the authors of this semantic web language.
   and OWL 2 ontologies themselves are primarily exchanged as RDF documents.]
 
 This work concentrates on a specific syntax of the OWL language. The so-called
-Manchester Syntax. Let's hear from the authors of that syntax what it's all
+Manchester syntax. Let's hear from the authors of that syntax what it's all
 about.
 
-// TODO why owl2 not owl1
 #quote(
   block: true, attribution: [w3.org #cite(<OWLWebOntologya>, supplement: [chapter 1 introduction])],
 )[
@@ -316,7 +312,7 @@ plugins to support more languages. The @table:the_problem shows there is a need
 for $n*m$ plugins when having $n$ languages an $m$ IDE's and every editor is
 supporting every language.
 
-== Language Server
+== Language Server and Client
 // https://www.thestrangeloop.com/2018/tree-sitter---a-new-parsing-system-for-programming-tools.html 4:05
 
 #figure(
@@ -343,7 +339,7 @@ layer is introduced, and new dependencies are added that are not integrated like
 in an IDE. In addition, most language servers work similarly to IDEs and parse
 the entire file with every keystroke.@loopTreesitterNewParsing
 
-== Tree Sitter
+== Tree-Sitter
 
 Tree-sitter is a parser generator and query tool for incremental parsing. It
 builds a deterministic parser for a given grammar that can parse a source file
@@ -385,20 +381,15 @@ grammatical constrains that LR parsing comes with
 @ironsExperienceExtensibleLanguage1970
 #cite(<langDeterministicTechniquesEfficient1974>, supplement: [introduction]).
 
-// TOOD (Context free grammars als wort einbauen)
-
 // secondary source @langDeterministicTechniquesEfficient1974
-
-// TODO mehr schriebe
 // TODO sekundärquelle durch primärquelle ersetzten
 
 //TODO paper Deterministic Techniques for Efficient Non-Deterministic Parsers DOI:10.1007/3-540-06841-4_65
 
 = Implementation <implementation>
 
-This chapter will explain what was implemented and how it was done. I will also
-show why I choose the tools that I did, what alternatives exist and when to use
-those.
+This chapter will explain what was implemented and how it was done. It will also
+show why the tools where chosen, what alternatives exist and when to use those.
 
 #figure(caption: [Architecture overview], kind: image)[
 ```pintora
@@ -415,17 +406,17 @@ LSP ..> [owl-ms-language-server]
 
 A language server needs a good parser and when there is no incremental error
 recovering parser it needs to be build. The parser generator chosen for this
-language server is tree sitter.
+language server is tree-sitter.
 
-=== Why Tree Sitter
+=== Why Tree-Sitter
 
 I chose three sitter, because it is an incremental parsing library. This is a
 must because the OMN files can be very large. Parsing a complete file after only
 changing one character wound be inefficient. In some cases unusable. The parser
 I build takes about 490ms for the initial parse of a 2M file. The parser then
 only needs about 150ms for a changed character in the same file using the
-resulting tree of the previous parsing. The next big reason why I chose tree
-sitter is the error recovery. In the presence of syntax error the parser can
+resulting tree of the previous parsing. The next big reason why tree-sitter was
+chosen is the error recovery. In the presence of syntax error the parser can
 recover to a valid state and continue parsing with a prior rule. For example the
 following OMN file
 
@@ -453,63 +444,51 @@ not be checked for errors or would become invalid to. It would be impossible to
 show all syntax error in a file.
 
 // Rust bindings
-Tree sitter comes with rust bindings but also supports a number of programming
-languages. I chose rust. The programming language could offer me the safety,
-speed and comfort needed. Some notable alternatives are typescript and c++. I
-choose rust over typescript, because of performance. Rust compiles to native
-machine code and runs without a garbage collector while typescript first gets
-transpiled into javascript and then would run on a "virtual machine" like
-javascript engine - e.g. V8. Modern javascript engines are fast enough and this
-language server could be ported. One other benefit of typescript is the fact
-that it can be packaged into a Visual Studion Code plugin.// TODO is it possible to do the same thing using a rust binary?
-I will try the same thing using a rust binary.// TODO
-C++ on the other hand is very fast but lacks the safety and comfort. This is not
-a strict requirement, and it would be a viable implementation language for this
-language server.// More about that in @rust_over_cpp.
-But the rust bindings, cargo package manager and memory safety are excellent and
-guaranteed an efficient implementation. The Chromium project had found that
-roughly 70% of serious security bugs are memory safety problems @MemorySafety.
-The usage of Rust rules out the entire class of bugs for safe rust applications.
-In hindsight, it was a good choice and I recommend rust for writing language
-servers.
+Tree-sitter comes with rust bindings but also supports a number of programming
+languages, but Rust was used exclusively. The programming language could offer
+me the safety, speed and comfort needed. Some notable alternatives are
+typescript and c++. Rust was chosen over typescript, because of performance.
+Rust compiles to native machine code and runs without a garbage collector while
+typescript first gets transpiled into javascript and then would run on a "virtual
+machine" like javascript engine - e.g. V8. Modern javascript engines are fast
+enough and this language server could be ported. One other benefit of typescript
+is the fact that it can be packaged into a Visual Studio Code plugin. The same
+thing will be done using a rust binary, bundling it into the plugin. C++ on the
+other hand is very fast but lacks the safety and comfort. This is not a strict
+requirement, and it would be a viable implementation language for this language
+server. But the rust bindings, cargo package manager and memory safety are
+excellent and guaranteed an efficient implementation. The Chromium project had
+found that roughly 70% of serious security bugs are memory safety problems
+@MemorySafety. The usage of Rust rules out the entire class of bugs for safe
+rust applications. In hindsight, it was a good choice and this work will
+recommend rust for writing language servers. @RustProgrammingLanguage
 
-// TODO reference rust book, typescript and c++ stuff
-
-I came across tree sitter when I was researching what my own text editor uses
-for its syntax highlighting. It turned out that the editor Helix also uses tree
-sitter. Just like GitHub.// TODO Reference for this?
-It is popular and the standardized syntax tree representation and grammar files
-make it ideal.
+Tree-sitter was found when researching what my own text editor uses for its
+syntax highlighting. It turned out that the editor
+Helix@HelixEditorDocumentation also uses tree-sitter. Just like
+GitHub@WhyTreesitterGithub. It is popular and the standardized syntax tree
+representation and grammar files make it ideal.
 
 // Alternatives
-Initially I wanted to work with Haskell and use the parser from spechub's Hets,
-but it uses parsec and is sadly not an incremental parser. Also, it has no error
-recovery functionality that would be sufficient for text editors. There are
-similar reasons to not use the owlapi for parsing.
+Initially, Haskell was chosen and the parser from Spechub's Hets was used, but
+it uses parsec and is unfortunately not an incremental parser. Also, it has no
+error recovery functionality that would be sufficient for text editors. There
+are similar reasons to not use the owlapi@OwlcsOwlapi2024 for parsing. Then I
+read about the Happy parser generator, which Haskell uses, and Alex the tool for
+generating lexical analysers. But the complexity of these tools put me off, and
+I also didn't know how to connect the different libraries with one another. The
+Protégé project uses the parser of the owlapi which does not do error recovering
+or incremental paring.The package responsible for parsing in the owlapi is `org.semanticweb.owlapi.manchestersyntax.parser`.
 
-//TODO besserer satz als Nobody would like to have a completely red underlined document in case of a syntax error in
-//line one.
+For these reasons a custom parser was written. The next chapter will show how
+this was done.
 
-I then read about the Happy parser generator, witch Haskell uses, and Alex the
-tool for generating lexical analyzers. But the complexity of these tools put me
-off, and I also didn't know how to connect the different libraries with one
-another.
+=== Tree-Sitter Grammar
 
-The Protégé project uses the parser of the owlapi which does not do error
-recovering or incremental paring.// TODO ref owl api
-The package responsible for parsing in the owlapi is `org.semanticweb.owlapi.manchestersyntax.parser`.
-
-// TODO more alternavies
-
-For these reasons I ended up writing a custom parser. The next chapter will show
-how this was done.
-
-=== Tree Sitter Grammar
-
-Staring with the official reference of the OWL2 manchester syntax
-@OWLWebOntologya, I transformed the rules into tree sitter rules, replacing the
-rules with the corresponding tree sitter ones. For example, I rewrote the
-following rule from
+Staring with the official reference of the OWL2 Manchester syntax
+@OWLWebOntologya, the rules where transformed into tree-sitter rules, replacing
+the rules with the corresponding tree-sitter ones. For example, the following
+rule was rewirtten from
 
 ```bnf
 ontologyDocument ::=  { prefixDeclaration } ontology
@@ -521,7 +500,7 @@ into
 ontology_document: $ => seq(repeat($.prefix_declaration), $.ontology),
 ```
 
-Tree sitter rules are always read from the `$` object and named in snake_case.
+Tree-sitter rules are always read from the `$` object and named in snake_case.
 Some are prefixed with `_`. We call theses "hidden rules". We call rules that
 are not prefixed "named rules" and we call terminals symbols, literals and
 regular expressions "anonymous rules". For example the rule
@@ -540,13 +519,13 @@ _frame: $ =>
 ```
 
 is a hidden rule, because `_frame` is a supertype of `class_frame`. These rules
-are hidden because they add substantial depth and noise to the syntax tree.// TODO reference https://tree-sitter.github.io/tree-sitter/creating-parsers#hiding-rules
+are hidden because they add substantial depth and noise to the syntax tree.
 While using the written grammar in a later step of the implementation it was
 obvious that hiding each supertype node did increase the complexity of the
 queries, because while querying for a supertype each subtype must be named,
 instead of just one named supertype. The transformations where done using the
 following table for reference. Each construct has a rule in the original
-reference and in the new tree sitter grammar.
+reference and in the new tree-sitter grammar.
 
 // #show table.cell: it => {
 //   if it.x == 0 or it.y == 0 {
@@ -567,7 +546,7 @@ reference and in the new tree sitter grammar.
 // #show table.c
 
 #j-table(
-  columns: (1fr, auto, auto), table.header([*Construct*], [*OWL BNF*], [*tree sitter grammar*]),
+  columns: (1fr, auto, auto), table.header([*Construct*], [*OWL BNF*], [*tree-sitter grammar*]),
   // ---------------------
   [sequence], [```'{' literalList '}'```], [```js seq('{', $.literal_list, '}')```],
   // ---------------------
@@ -585,11 +564,11 @@ reference and in the new tree sitter grammar.
 )
 
 In a second step the rules where transformed from typical BNF constructs into
-more readable tree sitter rules. These transformations are shown in the
+more readable tree-sitter rules. These transformations are shown in the
 following table.
 
 #j-table(
-  columns: (2fr, 3fr, 3fr), table.header([*Construct*], [*OWL BNF*], [*tree sitter grammar*]),
+  columns: (2fr, 3fr, 3fr), table.header([*Construct*], [*OWL BNF*], [*tree-sitter grammar*]),
   // ---------------------
   [separated by comma], [```<NT> { ',' <NT> }```], [```js sep1(<NT>, ',')```],
   // ---------------------
@@ -625,24 +604,24 @@ non-terminals. It would be time-consuming and impractical to write that grammar
 in full just to get some small benefit in syntax errors.
 
 Tests where wrote to see if the grammar and the resulting parser would produce
-the correct syntax tree for the given source code. This is done with tree
-sitters CLI. More about tree sitter query testing in @query-tests.
+the correct syntax tree for the given source code. This is done with
+tree-sitters CLI. More about tree-sitter query testing in @query-tests.
 
 The grammar had to be changed while developing and after writing large parts of
 the language server, containing many queries. This was of course time-consuming,
 as all queries in the language server had to be adapted for the new grammar.
 Unfortunately, there is no type checking or other tool support inside the
-original tree sitter. Everything is based on magic strings. There is a tool
+original tree-sitter. Everything is based on magic strings. There is a tool
 called rust sitter@HydroprojectRustsitter2024 that does type checking and
 creates a generated rust data structure for a given grammar, but it has
 limitations like no incremental parsing support and was hence not suitable,
-because this feature was one of the reasons why tree sitter was chosen.
+because this feature was one of the reasons why tree-sitter was chosen.
 
 === Using the generated parser
 
 There are a number of uses for the generated parser. The simplest is syntax
-highlighting. Because the language server was developed with helix, a tree
-sitter focused editor, in mind, the syntax highlighting uses tree sitter
+highlighting. Because the language server was developed with helix, a
+tree-sitter focused editor, in mind, the syntax highlighting uses tree-sitter
 queries. They use a modified version of the s-expression syntax and look
 something like this.
 
@@ -692,17 +671,6 @@ queries where getting more and more complicated. Changing the grammar is
 time-consuming because the language server depends on it. All relevant queries
 have to be adapted and unfortunately there is no good static analysis for this.
 
-// === Why use rust and not c or c++ <rust_over_cpp>
-
-// // TODO
-// - memory safety
-// - pointers
-// - compile time
-// - ease of use
-// - arithmetic type system
-
-// https://www.educative.io/blog/rust-vs-cpp#compare
-
 The grammar distribution works through the GitHub repository
 https://github.com/janekx21/tree-sitter-owl-ms. It contains an NPM package,
 queries and bindings. The queries are for folds, highlights and indents; the
@@ -711,11 +679,9 @@ language server imports as a submodule and uses as a local dependency.
 
 == LSP specification and Rust implementation
 
-// TODO who defines the specification
 Microsoft defines the LSP specification (Version 3.17)@LanguageServerProtocol on
-a GitHub page./* TODO reference LSP specification */ The page contains the used
-base protocol and its RPC methods using typescript types. The @lsp_lifecycle
-shows a typical LSP lifecycle.
+a GitHub page. The page contains the used base protocol and its RPC methods
+using typescript types. The @lsp_lifecycle shows a typical LSP lifecycle.
 
 #figure(
   caption: [An overview of the LSP lifecycle], kind: image,
@@ -741,7 +707,6 @@ sequenceDiagram
   Client-xServer: exit()
   deactivate Server
 ```
-// TODO ref springer buch
 ]<lsp_lifecycle>
 
 Not all LSP features can be listed here because many require more than one RPC
@@ -774,10 +739,6 @@ language smarts. It is used for requests, responses and notifications. However,
 the client should not expect a reply to a message. These are only remote
 procedure calls, not classic endpoints as we know them from servers.
 
-// TODO maybe errors, notification, progress and cancelation
-
-// TODO reference https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/
-
 The first thing that happens in the communication after starting the language
 server is that the client sends an in initialize request to the server. This
 contains meta information, who the client is, etc. But the most important thing
@@ -792,8 +753,6 @@ server and client are ready to start working. The handshake is complete. A
 communication ends preferably with a shutdown request from the client. After an
 empty response from the server, the client sends a final exit notification and
 this concludes the communication.
-
-// TODO maybe dynamic client capabilities, set trace, log trace
 
 The good thing is that we can leave out all these technical details when
 building a language server, because packages provide these functions. In the
@@ -849,8 +808,8 @@ According to the specification, the text document can be synchronized in two
 ways. In the first type is `Full`; the entire document is always sent. The
 second type is `Incemental`; only changes in the content of a document are sent.
 It must be remembered here that an ontology file can become very large. The file
-I am working with, `oeo-full.omn`, is about 2 megabytes in size. When deciding
-whether to synchronize the entire document or just the changed parts,
+that was worked with, `oeo-full.omn`, is about 2 megabytes in size. When
+deciding whether to synchronize the entire document or just the changed parts,
 incremental changes should be preferred. Only sending changes is fewer data and
 the server gets information where content changed for free and without diffing
 anything. This is very useful for incremental parsing and updating diagnostics,
@@ -954,7 +913,6 @@ sequenceDiagram
   @end_note
   Server->>Client: textDocument/publishDiagnostics(params: PublishDiagnosticsParams)
 ```
-// TODO ref springer buch
 ]
 
 This notification is sent from the client to the server to inform the language
@@ -987,8 +945,7 @@ diagnostics are then adapted and published. This is done by first removing the
 entries that overlap the changed positions and then generating and inserting new
 information in these positions (prune and extend). If the number of changes
 exceeds a threshold value, IRI map and diagnostics are completely removed and
-regenerated. I don't know if this is really necessary. You can find an example
-in @did_change_example.
+regenerated. You can find an example in @did_change_example.
 
 ```rust
 // inside impl LanguageServer
@@ -1031,19 +988,18 @@ This request is sent from the client to the server to resolve all semantic token
 in a text document. The parameter contains the URI of the file and the result
 contains a list of semantic tokens. The language server protocol does not define
 how syntax highlighting is done. Most editor do the highlighting with regular
-expressions, some use tree sitter queries. Visual Studio Code uses TextMate
-grammars.// TOOD ref https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide
-IntelliJ IDEA uses TextAttributeKeys2.// TODO ref https://plugins.jetbrains.com/docs/intellij/syntax-highlighting-and-error-highlighting.html
-Helix uses the tree sitter queries of `highlights.scm`, a common syntax
-highlighting file that a grammar optionally can define.// TODO ref https://docs.helix-editor.com/guides/adding_languages.html
-But the language server protocol defines how semantic tokens can be resolved.
-This is similar to syntax highlighting with a big advantage. Semantic tokens can
-capture language specific semantic meaning that regular expression can not
-(nearly impossible, but certainly unfeasible).// TODO ref https://link.springer.com/content/pdf/10.1007/978-1-4842-7792-8.pdf
+expressions, some use tree-sitter queries. Visual Studio Code uses TextMate
+grammars @SyntaxHighlightGuidea. IntelliJ IDEA uses TextAttributeKeys2
+@SyntaxErrorHighlighting. Helix uses the tree-sitter queries of `highlights.scm`,
+a common syntax highlighting file that a grammar optionally can define
+@HelixEditorDocumentation. But the language server protocol defines how semantic
+tokens can be resolved. This is similar to syntax highlighting with a big
+advantage. Semantic tokens can capture language specific semantic meaning that
+regular expression can not (nearly impossible, but certainly unfeasible)
+@gunasingheLanguageServerProtocol2022.
 
-That said, the owl-ms-language-server uses semantic tokens for syntax
+That said, the owl-ms-language-server uses semantic tokens just for syntax
 highlighting.
-// TODO write more?
 
 ```rust
 // inside impl LanguageServer
@@ -1530,8 +1486,8 @@ also need huge amounts of memory for copying operations.
 === DashMap
 
 DashMap@wejdenstalXacrimonDashmap is an implementation of a concurrent
-associative array/hashmap in Rust. I use DashMap with the document map and with
-the iri info map. It is an alternative to a rust hash map (`std::collections::HashMap`)
+associative array/hashmap in Rust. DashMap was used for the document map and for
+the IRI info map. It is an alternative to a rust hash map (`std::collections::HashMap`)
 which has a read write mutex (`RwLock<HashMap<K, V>>`). From the api it is very
 similar with the difference that it uses async/await syntax and can work in
 parallel. DashMap is very fast as the benchmarks of
@@ -1546,9 +1502,8 @@ of the language server did not contain any optimizations. It is unknown if there
 is a possibility to optimize the grammar and reduce parsing time. The Visual
 Studio Code plugin is very light and there is only one obvious optimization.
 Using the build in syntax highlighting instead of the semantic token feature of
-the language server.
-
-// TODO explain the further sub sections
+the language server. The following sections deal with asynchrony and server
+state versus on promise query.
 
 === Rust Async with Tokio <tokio>
 
@@ -1630,9 +1585,9 @@ struct Document {
 ]<code:document>
 
 The question that came up while developing is: "Should all document data come
-from just the tree or can you cache some information?". I used the additional
-state alternative, because retrieving distributed information like IRI info will
-cause a tree query to traverse the whole document/workspace. Caching on the
+from just the tree or can you cache some information?".The additional state
+alternative was used, because retrieving distributed information like IRI info
+will cause a tree query to traverse the whole document/workspace. Caching on the
 other hand has the implication of constantly updating the state. The
 disadvantage, it's more likely to be bugged than an ad hoc query.
 
@@ -1641,9 +1596,14 @@ of the Language Server Protocol for the Nickel
 Language"@sanderDesignImplementationLanguage in Chapter 4.2.3 Code Analysis. He
 calles it lazy and eager analysis.
 
-= Analysis <analysis>
-#todo(inline: true)[TODO schreiben]
-#lorem(50)
+= Evaluation <analysis>
+There are two parts to the evaluation. One quantitative and one qualitative. For
+the quantitative part, automated tests were introduced to evaluate the
+correctness of grammar and server, and there are also benchmarks that evaluate
+the usability of the application for real-time processing. There are also
+interesting benchmarks on the subject of incremental parsing. For the second
+part, the qualitative study, a survey was conducted. The necessary details such
+as the survey form, results and the assessment of the results can be found here.
 
 == Automated Testing
 
@@ -1658,9 +1618,9 @@ The tests should run when pushing to the repository in GitHub by using
 GitHub-Actions. Merging or deploying a version should only be done when every
 automated test succeeds.
 
-=== Query tests in tree sitter <query-tests>
+=== Query tests in tree-sitter <query-tests>
 
-The tree-sitter-owl2-manchester-syntax repository, that contains the tree sitter
+The tree-sitter-owl2-manchester-syntax repository, that contains the tree-sitter
 grammar that is used by the language server, has its own tests. They can be
 found in the `test/corpus/*.txt` files and are executed by running `npm test`.
 
@@ -1701,16 +1661,16 @@ Running them after a grammar change verifies that everything still parses
 correctly. But when changing the grammar the tests don't line up anymore and
 also need to be changed. Each visible node and each permutation of language
 constructs should have a corresponding test to increase the test coverage. When
-multiple people work on a tree sitter grammar, the tests give the reader a good
+multiple people work on a tree-sitter grammar, the tests give the reader a good
 understanding of what inputs produce what outputs, the "edges" of a language.
-Tree sitter also supports testing syntax highlighting, but this project does not
+Tree-sitter also supports testing syntax highlighting, but this project does not
 use it.
 
 === Integration tests in rust
 Integration tests can be found in the rust project of the language server. They
-check the interaction between the implemented language server trait and the tree
-sitter parser with its grammar. No stubs or mocks were used for the state of the
-server. Here you can test whether the server parses correctly, whether it
+check the interaction between the implemented language server trait and the
+tree-sitter parser with its grammar. No stubs or mocks were used for the state
+of the server. Here you can test whether the server parses correctly, whether it
 correctly accepts the individual requests and whether its internal state is
 up-to-date.
 
@@ -1846,9 +1806,9 @@ The results show two things. Normal parsing is complex in the runtime of $O(n)$.
 This was basically to be expected, because parsing requires iterating over all
 characters at least once. Nevertheless, it is good to see that the parser is
 roughly in the best possible runtime complexity. The second result shows that
-incremental parsing is also in $O(n)$. Here I would have expected the runtime
-complexity to be lower. Nevertheless, incremental parsing is significantly
-faster than blind parsing. A five to tenfold acceleration is to be expected.
+incremental parsing is also in $O(n)$. The expected runtime complexity was
+lower. Nevertheless, incremental parsing is significantly faster than blind
+parsing. A five to tenfold acceleration is to be expected.
 
 #figure(caption: [Results of the "ontology_size_bench" benchmark])[
   #image("assets/benchmark_lines.svg")
@@ -1858,7 +1818,7 @@ faster than blind parsing. A five to tenfold acceleration is to be expected.
   #image("assets/benchmark_change_lines.svg")
 ]<image:ontology_size_bench>
 
-== Evaluation of the usability <evaluation>
+== Usability <evaluation>
 
 As part of this thesis the language server was given to ontology experts that
 tried working with the tool. They were written to via email and introduced to
@@ -1878,7 +1838,7 @@ for around 10 minutes; one for around 30 minutes. Everyone described the
 installation process as very easy. This was very pleasing, because installing a
 language server can be very complex. In this case, a lot of energy went into
 making the process smooth. The question about experienced performance where also
-100% very positive. This was to be expected, as my performance tests showed
+100% very positive. This was to be expected, as the performance tests showed
 comparable results. The question on how well the goals of the developer could be
 achieved using the language server saw a mix of low and high result. The
 question on general experience was also pretty mixed with two participants
@@ -1890,25 +1850,24 @@ was never certain that the detection of syntax errors and the corresponding
 message was genuinely good. The same results where also found on the inlay
 hinting question. Inlay hinting was one of the focuses of this work and this
 survey shows it. The question about auto-completion got a good but only one very
-good results. The question about the bugs a user encountered got one answer.
+good results. The question about the bugs users encountered got the following
+answer.
 
-#quote(
-  block: true,
-)[
-  Some things don't seem to be affected by text-highlighting: e.g.
+```
+Some things don't seem to be affected by text-highlighting: e.g.
 
-  OEO_00020426 "issue: https://github.com/OpenEnergyPlatform/ontology/issues/725
-  pull request: https://github.com/OpenEnergyPlatform/ontology/pull/757"
+OEO_00020426 "issue: https://github.com/OpenEnergyPlatform/ontology/issues/725
+pull request: https://github.com/OpenEnergyPlatform/ontology/pull/757"
 
-  "issue: https://github.com/OpenEnergyPlatform/ontology/issues/725 is green, like
-  text in quotations should be, according to examples above
+"issue: https://github.com/OpenEnergyPlatform/ontology/issues/725 is green, like
+text in quotations should be, according to examples above
 
-  whereas pull request: https://github.com/OpenEnergyPlatform/ontology/pull/757"
-  is white just like OEO_00020426
+whereas pull request: https://github.com/OpenEnergyPlatform/ontology/pull/757"
+is white just like OEO_00020426
 
-  After testing some more, I'm pretty sure a line break also breaks the
-  highlighting. This is especially distracting in very long comments.
-]
+After testing some more, I'm pretty sure a line break also breaks the
+highlighting. This is especially distracting in very long comments.
+```
 
 The bug could be reproduced and is likely linked to the client capability
 `multilineTokenSupport`. As stated in the LSP
@@ -1920,32 +1879,99 @@ a new token should start at the next line to wrap around. This was not
 implemented yet, and therefore the next line does not get the correct syntax
 highlighting.
 
-The question about missing features in the tool got two answers.// TODO hier weiter !!!!!!!!!!!!!!
+The question about missing features in the tool got the following two answers.
+```
+I tested this tool with the oeo:
+
+Axioms are still pretty hard to read, because the tool only translates the last
+numerical identifier in a line. (SubclassOf: x some y[label of y]).
+
+It doesn't seem to know what to do when a term is imported: e.g.
+<http://purl.obolibrary.org/obo/IAO_0000136> doesn't get translated to it's
+label and hovering over it only shows the statement "No info found on IRI".
+
+So maybe support for axioms and imported terms could be a nice addition to the
+tool.
+```
+```
+I tested it with OEO. It imports from other ontologies and is structured in
+several files. The hover, inlay hinting etc. is only working for classes defined
+in the very files and disregarding the imports.
+```
+
+Both describe problems with importing IRIs, a feature that is missing. The
+problem with the labels on one line could not be reproduced, it is probably
+related to the previous problem. The question about working with this tool
+instead of the tool that the user is using now got mixed answers. One user said
+he could "not at all" work with this tool instead. The comments on the form
+where also helpful.
+
+```
+Much more comfortable than using a plain text editor. Would swap for that (but not for Protégé).
+```
+```
+This tool made reading omn-files in a text editor much easier.
+I especially like the way it translates numerical identifiers to their labels.
+
+Great job :)
+```
+```
+I currently use Protege to view an ontology and its taxonomy. That is not really feasible with a text editor, so there isn't an option for switching to the language server.
+However if I would have to work on the bare .omn file in the future, having this language server really would be a great addition!
+```
+```
+The tool is a nice supplement and support for working on ontology code.
+```
+
+The answers suggest that the tool is functional and better than a plain text
+editor but that it is not worth switching to it from a graphical tool.
 
 = Conclusion
 
-// TODO
-- Rust and tree sitter are good software for LSP's
-- The build language server is realtime
-- The build language server produces good syntax errors
-- The build language servers best feature is the inlay hinting
-- It was hard to track each syntax thing like keywords and rules
-- Changing the grammar has a large impact
+// - Rust and tree-sitter are good software for LSP's
+// - The build language server is realtime
+// - The build language server produces good syntax errors
+// - The build language servers best feature is the inlay hinting
+// - It was hard to track each syntax thing like keywords and rules
+// - Changing the grammar has a large impact
 
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
+Looking at the usability evaluation, it is clear that the tool is usable, but
+requires a lot more resources to be considered an equivalent alternative to a
+graphical tool like Protégé. Furthermore, the tool will never be able to have
+the same functionality as a graphical tool, because it has fundamentally
+different goals. Nevertheless, the owl-ms-language-server is a functional little
+tool that was able to fulfil all its requirements well. This is partly due to
+the fact that the libraries and programming languages chosen can provide a fast,
+secure and maintainable basis for any language server that does not integrate
+with an existing tool. The resulting program is usable in real time and,
+according to the qualitative survey, produces good syntax error messages. The
+best feature is inlay hinting, which makes it possible to use some ontologies in
+the first place. It was not easy to rewrite an existing grammar in the
+tree-sitter form and to decide on a specific form, and any modification of the
+grammar requires a lot of effort.
+
+All in all, the project is a good starting point and a solid basis for further
+steps towards an editor agnostic language server for the development of
+ontologies.
 
 == Future Work
-#todo(inline: true)[TODO schreiben]
-#lorem(100)
 
-- Mono Repo for easy releases (this is just technical dept)
-- Move to Rustup stable tool-chain to ease the installation
-- Implement more features (see list in repo)
-- Write more tests (of queries for example)
-- Fetching external ontologies
-- Create class code action when class IRI is not found
-- Fix bugs
+// - Implement more features (see list in repo)
+// - Mono Repo for easy releases (this is just technical dept)
+// - Move to Rustup stable tool-chain to ease the installation
+// - Write more tests (of queries for example)
+// - Fetching external ontologies
+// - Create class code action when class IRI is not found
+// - Fix bugs
+
+There is a list of future features that the tool could include, as well as a
+number of purely technical improvements. Starting with a mono repository for
+easier delivery of the program, changing the rustup toolchain from nightly to
+stable, writing more tests and fixing small bugs. The most necessary features
+are still missing LSP endpoints like displaying all symbols like frames, an
+action commands for creating new frames or supporting more than one file. In
+addition, there are informations that is not yet loaded such as external
+ontologies that are referenced via full IRIs.
 
 // = Appendix
 
@@ -1957,7 +1983,6 @@ The question about missing features in the tool got two answers.// TODO hier wei
  Notes:
 
  Possible Features:
- - Auto completion with label
  - Goto definition of keywords inside the lsp directory
 
  Warum hast du so etwas gebaut, was wären Alternativen gewesen und warum hast du sie nicht genutzt.

@@ -226,7 +226,7 @@
   set footnote.entry(separator: line(length: 40%, stroke: 0.5pt))
   set list(marker: (sym.bullet, "◦"))
 
-  let (first-reviewer, second-reviewer, supervisor) = translations.title-page
+  let (second-reviewer, supervisor) = translations.title-page
 
   // -------------- TITLE PAGE -------------- //
   // STYLIZING TITLE PAGE AND ABSTRACT BEGINS HERE:
@@ -266,19 +266,19 @@
     #v(5.35em)
 
     // first and second reviewer are required, supervisor is optional.
-    #if reviewers.len() >= 2 {
+    #if reviewers.len() >= 1 {
       let first-reviewer-name = reviewers.first()
-      let second-reviewer-name = reviewers.at(1)
-      let supervisor-name = reviewers.at(2, default: none)
+      let supervisor-name = reviewers.at(1)
+      // let supervisor-name = reviewers.at(2, default: none)
 
       [
-        #first-reviewer:\
+        #second-reviewer:\
         #first-reviewer-name\ \
         #v(-1.5em)
 
-        #second-reviewer:\
-        #second-reviewer-name\ \
-        #v(-1.5em)
+        // #second-reviewer:\
+        // #second-reviewer-name\ \
+        // #v(-1.5em)
 
         #if supervisor-name != none [
           #supervisor:\
@@ -299,6 +299,36 @@
   ]
 
   pagebreak()
+
+  align(
+    horizon,
+  )[
+
+    #text(font: "Libertinus Sans", [*Acknowledgments*])\ \
+    I am grateful to all the people who have been part of the whole thesis from
+    planning to implementation to final editing. A special thanks goes to my
+    supervisor, Till, and the staff at the IKS. I would also like to thank my close
+    friends and family who have supported and tolerated me and made my time so much
+    more enjoyable. Thank you, Lara, for your endless support.
+
+    Janek]
+
+  v(8.5em)
+
+  align(
+    horizon,
+  )[
+
+    #text(font: "Libertinus Sans", [*Danksagungen*])\ \
+    Ich bin allen Personen dankbar, die an der Arbeit beteiligt waren, von der
+    Planung über die Durchführung bis zum finalen Entwurf. Ein besonderer Dank geht
+    an meinen Betreuer, Till, und den Mitarbeitern des IKS. Außerdem möchte ich mich
+    bei meinen engen Freunden und meiner Familie bedanken, die mich unterstützt und
+    geduldet haben und mir die Zeit so viel angenehmer gemacht haben. Danke dir,
+    Lara, für deine unermüdliche Unterstützung.
+
+    Janek]
+
   pagebreak()
   body
 }
