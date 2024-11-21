@@ -6,7 +6,7 @@
 
 #heading(supplement: "Appendix")[Appendix]<appendix>
 
-== How to read S-expressions <how_to_read_s_expression>
+== How to read S-Expressions <how_to_read_s_expression>
 
 Symbolic expressions are expressions inside tree structures. They were invented
 and used for lisp languages, where they are data structures and source code.
@@ -107,7 +107,7 @@ children.
 
 Matches every `node` that has a child with a child that is a `leaf` node.
 
-== Incremental change example <did_change_example>
+== Incremental Change Example <did_change_example>
 
 Imagine a text document with the content below.
 
@@ -154,7 +154,7 @@ Class: pizza:Napoletana
         rdfs:label "Napoletana"@en
 ```
 
-== Evaluation form <evaluation_form>
+== Evaluation Form <evaluation_form>
 
 #let rating(a, b) = grid(
   columns: (auto, auto, auto, auto, auto, auto, auto), gutter: 5mm, [], [1], [2], [3], [4], [5], [],
@@ -167,7 +167,7 @@ heading section then some background questions and a main part which ends with
 comments. Parts in brackets stand for images that are comparable with the images
 in this thesis.
 
-=== Heading section
+=== Heading Section
 
 *Disclaimer*: This evaluation will be used in the bachelor thesis "Design and
 development of an OWL 2 manchester syntax language server" by Janek Winkler.
@@ -189,7 +189,7 @@ terms that are relevent and need explanation. They are just examples.
 *Finished trying out the languge server?* Please continue to the next section of
 this form and share your experience.
 
-=== Background questions
+=== Background Questions
 #block[
   #set list(marker: circle(radius: 0.4em))
 
@@ -211,7 +211,7 @@ this form and share your experience.
   - >5h
 ]
 
-=== Main section
+=== Main Section
 
 This next section has questions about your experience with the language server.
 The lower the number, the worse the experience. Higher numbers indicate better

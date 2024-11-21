@@ -9,7 +9,7 @@
 // optional: date to specify your deadline (default: datetime.today())
 // optional: lang to specify the language for text features like "" or hyphenation (specify as ISO 639-1/2/3 code, default: "en")
 #show: project.with(
-  "Design and development of an OWL 2 manchester syntax language server", (name: "Janek Winkler", mail: "janek.winkler@st.ovgu.de"), include "chapters/abstract.typ", thesis-type: "Bachelor", reviewers: ("Fabian Neuhaus", "Till Mossakowski",),
+  "Design and Development of an OWL 2 Manchester Syntax Language Server", (name: "Janek Winkler", mail: "janek.winkler@st.ovgu.de"), include "chapters/abstract.typ", thesis-type: "Bachelor", reviewers: ("Fabian Neuhaus", "Till Mossakowski",),
 )
 
 // Set lower roman numbering for ToC and abstract.

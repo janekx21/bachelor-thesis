@@ -28,19 +28,14 @@ requirements for modern software. To meet these demands, developers are
 continually tasked with adding new features or modifying existing ones, which
 results in larger and more complex codebases. As complexity grows, programming
 errors become inevitable, potentially leading to undesirable behaviors. Testing
-is a common method developers use to identify errors and unintended behaviors.
-Extensive test suites are run during development to evaluate a component's
-behavior under various inputs and conditions. While testing can reveal many
-errors, it cannot guarantee the absence of all defects or ensure the overall
-correctness of the program. As noted by Beyer and Lemberger in "Software
-Verification: Testing vs. Model Checking"@beyerSoftwareVerificationTesting2017,
-formal verification should complement testing to provide a more robust assurance
-of program correctness. Formal verification requires a specification of the
-desired behavior, which the verification tool then uses to check if the program
-meets these requirements. If a property is violated, the verification tool may
-produce a warning, detailing the cause. This allows developers to trace the
-problem, correct the issue, and re-verify the program. This process is deeply
-embedded into the field of computer science.
+is one method to identify errors, but testing is expensive and slow. Another
+method is static analysis. Some static analyses, for example, a very simple
+syntax error check, take place much earlier, as they are performed in real time,
+during text based programming. This allows developers to trace the problem and
+correct the issue as early as possible. This process is deeply embedded into the
+field of computer science.
+
+// TODO etwas über ontologie entwicklung. aber ich weiß darüber nichts
 
 *The problem* that is thesis will address is the current lack of text tooling
 for the OWL community. A first step towards a solution to this problem is a new
@@ -58,13 +53,25 @@ displayed in the editor. The language server will provide diagnostics, hover,
 semantic tokens and jump to definition features. A small qualitative user study
 will show whether the implementation is able to keep up with the users
 expectations in a synthetic scenario. It should be fast enough and feature rich
-to work with. The scenario can not be a real-world one, because the chosen
-language does not have an established text based workflow yet.
+to work with.
+
+The Open Energy Ontology (OEO) @emeleOpenEnergyOntology2024 is an open source
+domain ontology of the energy systems analysis context. It is published on
+GitHub and uses the Manchester OWL syntax because the syntax is user-friendly
+and allows viewing the history of changes. Most developers use the graphical
+user interface Protégé, but it is of course possible to work with a text editor.
+The advantage is, among other things, that the history is cleaner, as there is
+no serialization and re-sorting.
+
+Other advantages of text based programming that are applicable here are: The
+data is not easily searchable, too many mouse movements and switching between
+mouse and keyboard, vendor lock-in, based on a lot of code from others.
+@briceVisualVsText2024
 
 *The research question* this thesis will answer while documenting which data
 structures, tech stacks and packages are best suited, and the performance
 characteristics of them is: "How to develop a language server for a known
-lanugage that satifies the user in need for features while not slowing him
+language that satisfies the user in need for features while not slowing him
 down?".
 
 // #show figure.where(kind: "RQ"): it => box(width: 100%)[
@@ -121,7 +128,7 @@ formatting, linked editing range (Ranges that have the same content) and Symbol
 // first explain what the work i am doing is and
 
 After the introduction and related work chapters, the thesis begins with
-background information about OWL2, the Manchester syntax, IDE's and language
+background information about OWL2, the Manchester syntax, IDEs and language
 servers in the @background. This wide background is followed by detailed
 information about the implementation of a language server in @implementation.
 What the decisions where and why. It involves translating a grammar, creating a
@@ -155,7 +162,7 @@ Github repositories. This is also the case for this typst document.
   - Distributed via VisualStudio Marketplace\
     https://marketplace.visualstudio.com/items?itemName=JanekWinkler.vscode-owl-ms
 
-= Related work <chapter:related_work>
+= Related Work <chapter:related_work>
 
 The goal of this work is to implement a simple language server with a
 corresponding Visual Studio Code plugin. There are countless language servers
@@ -236,52 +243,41 @@ requests.
 This chapter will explain programs, libraries, frameworks and techniques that
 are important to this work. You can skip parts that you are familiar with. We
 start with the ontology language this language server will support. Then we go
-over how IDE's used to work and what modern text editors do different. This is
+over how IDEs used to work and what modern text editors do different. This is
 followed by an explanation of the parser generator ,tree-sitter, that was used.
 
 == Owl 2 Manchester Syntax
 
-To understand what OWL 2, the second version of the OWL language, is, let's hear
-from the authors of this semantic web language.
+// TODO ref https://ceur-ws.org/Vol-216/submission_9.pdf
+// TODO ref https://protegewiki.stanford.edu/images/5/5f/Owled2008dc_paper_11.pdf
 
-#quote(
-  block: true, attribution: [w3.org #cite(<OWLWebOntologya>, supplement: [abstract])],
-)[The OWL 2 Web Ontology Language, informally OWL 2, is an ontology language for
-  the Semantic Web with formally defined meaning. OWL 2 ontologies provide
-  classes, properties, individuals, and data values and are stored as Semantic Web
-  documents. OWL 2 ontologies can be used along with information written in RDF,
-  and OWL 2 ontologies themselves are primarily exchanged as RDF documents.]
+To understand what OWL 2, the second version of the OWL language, is, w3.org
+writes: "The OWL 2 Web Ontology Language [...] is an ontology language for the
+Semantic Web with formally defined meaning. OWL 2 ontologies provide classes,
+properties, individuals, and data values and are stored as Semantic Web
+documents. OWL 2 ontologies can be used along with information written in RDF,
+and OWL 2 ontologies themselves are primarily exchanged as RDF
+documents."@OWLWebOntologya[abstract] This work concentrates on a specific
+syntax of the OWL language. The so-called Manchester syntax; w3.org writes: "The
+Manchester OWL syntax is a user-friendly syntax for OWL 2 descriptions, but it
+can also be used to write entire OWL 2 ontologies. The original version of the
+Manchester OWL syntax was created for OWL 1 [...]. The Manchester syntax is used
+in Protégé 4 and TopBraid Composer®, particularly for entering and displaying
+descriptions associated with classes. Some tools (e.g., Protégé 4) extend the
+syntax to allow even more compact presentation in some situations (e.g., for
+explanation) or to replace IRIs by label values [...]. The Manchester OWL syntax
+gathers together information about names in a frame-like manner, as opposed to
+RDF/XML, the functional-style syntax for OWL 2, and the XML syntax for OWL 2. It
+is thus closer to the abstract syntax for OWL 1, than the above syntaxes for OWL
+\2. Nevertheless, parsing the Manchester OWL syntax into the OWL 2 structural
+specification is quite easy, as it is easy to identify the axioms inside each
+frame. As the Manchester syntax is frame-based, it cannot directly handle all
+OWL 2 ontologies. However, there is a simple transform that will take any OWL 2
+ontology that does not overload between object, data, and annotation properties
+or between classes and datatypes into a form that can be written in the
+Manchester syntax."@OWLWebOntologya[Chapter 1]
 
-This work concentrates on a specific syntax of the OWL language. The so-called
-Manchester syntax. Let's hear from the authors of that syntax what it's all
-about.
-
-#quote(
-  block: true, attribution: [w3.org #cite(<OWLWebOntologya>, supplement: [chapter 1 introduction])],
-)[
-  The Manchester OWL syntax is a user-friendly syntax for OWL 2 descriptions, but
-  it can also be used to write entire OWL 2 ontologies. The original version of
-  the Manchester OWL syntax was created for OWL 1 [...]. The Manchester syntax is
-  used in Protégé 4 and TopBraid Composer®, particularly for entering and
-  displaying descriptions associated with classes. Some tools (e.g., Protégé 4)
-  extend the syntax to allow even more compact presentation in some situations
-  (e.g., for explanation) or to replace IRIs by label values [...].
-
-  The Manchester OWL syntax gathers together information about names in a
-  frame-like manner, as opposed to RDF/XML, the functional-style syntax for OWL 2,
-  and the XML syntax for OWL 2. It is thus closer to the abstract syntax for OWL
-  1, than the above syntaxes for OWL 2. Nevertheless, parsing the Manchester OWL
-  syntax into the OWL 2 structural specification is quite easy, as it is easy to
-  identify the axioms inside each frame.
-
-  As the Manchester syntax is frame-based, it cannot directly handle all OWL 2
-  ontologies. However, there is a simple transform that will take any OWL 2
-  ontology that does not overload between object, data, and annotation properties
-  or between classes and datatypes into a form that can be written in the
-  Manchester syntax.
-]
-
-== IDE's
+== IDEs
 
 #figure(
   caption: [The problem: "The Matrix"],
@@ -301,15 +297,15 @@ about.
   )
 ]<table:the_problem>
 
-Integrated development environments (IDE's) use syntax trees to deliver language
-smarts to the programmer. The problem with IDE's is that they are focused on
+Integrated development environments (IDEs) use syntax trees to deliver language
+smarts to the programmer. The problem with IDEs is that they are focused on
 specific languages or platforms. They are usually slow due to not using
 incremental parsing. This means on every keystroke the IDE is parsing the whole
 file. This can take 100 milliseconds or longer, getting slower with larger
 files. This delay can be felt by programmers while typing
-@loopTreesitterNewParsing. Because IDE's focus on single languages they need
+@loopTreesitterNewParsing. Because IDEs focus on single languages they need
 plugins to support more languages. The @table:the_problem shows there is a need
-for $n*m$ plugins when having $n$ languages an $m$ IDE's and every editor is
+for $n*m$ plugins when having $n$ languages an $m$ IDEs and every editor is
 supporting every language.
 
 == Language Server and Client
@@ -364,22 +360,44 @@ All these features make it extremely useful for parsing code that is constantly
 modified and contains syntactical errors, like source code, written inside code
 editors.
 
-== GLR parser
+== GLR Parser
 
 GLR parsers (generalized left-to-right rightmost derivation parser) are more
-general LR Parsers that handle non-deterministic or unambiguous grammars.
-Deterministic LR parsers #cite(<ahoTheoryParsingTranslation1972>, supplement: [chapter 4]) have
-been well studied and optimized, yielding very efficient parsers. But they are
-limited to a subset of grammars that are not unambiguous. GLR parsers do not
-produce non-deterministic automata in the theoretical sense, rather they produce
-an algorithm simulating them. Keeping track of all possible states in parallel.
-Backtracking on the other hand is extremely in efficient. Parallel parsers #cite(<ahoTheoryParsingTranslation1972>, supplement: [chapter 4.1 and 4.2]) on
-the other hand produce in the worse case a time complexity of $O(n^3)$, like
-random grammars. But on a large class of grammars they are linear in time. This
-makes them extremely useful for design and research, because of the otherwise
-grammatical constrains that LR parsing comes with
-@ironsExperienceExtensibleLanguage1970
-#cite(<langDeterministicTechniquesEfficient1974>, supplement: [introduction]).
+general LR Parsers that handle non-deterministic or unambiguous grammars. LR
+Parsers are a type of buttom-up parser that can only analyze deterministic
+context-free languages (DCFL) @knuthTranslationLanguagesLeft1965. These
+languages are a proper subset of context-free languages, with the constraint,
+that they can be accepted by a deterministic pushdown automaton
+@hopcroftIntroductionAutomataTheory1979. A context-free languages is a language
+where a context-free grammar exists that accepts precisely that language. They
+can be classified by the fact that each production rule is in the form
+
+$ A -> alpha $
+
+where $A$ is a non-terminal symbol and $alpha$ is a chain of terminal,
+non-terminal symbols or empty. Regardless of the surrounding terminals or
+non-terminals, hence the name context-free, $A$ can always be replaced by $alpha$.
+@hopcroftIntroductionAutomataTheory2007
+
+Deterministic LR parsers @ahoTheoryParsingTranslation1972[Chapter 4] have been
+well studied and optimized, yielding very efficient parsers. But they are
+limited to a subset of grammars that are not ambiguous. GLR parsers are not
+limited in this sense and use context-free grammars directly, not a sub set.
+They do not produce non-deterministic automata in the theoretical sense, rather
+they produce an algorithm simulating them. Keeping track of all possible states
+in parallel. Other parsers use backtracking, which is extremely in efficient.
+Parallel parsers @ahoTheoryParsingTranslation1972[Chapter 4.1 and 4.2] on the
+other hand produce in the worse case, e.g. random grammars, a time complexity of $O(n^3)$ and
+on a large class of grammars they are linear in time. This makes them super
+useful for design and research, because of the otherwise grammatical constrains
+that LR parsing comes with @ironsExperienceExtensibleLanguage1970
+@langDeterministicTechniquesEfficient1974[Introduction].
+
+Tree-sitter is a GLR parser. The rules that define the grammar are in the form
+of $A -> alpha$ and can be ambiguous. The original grammar that was translated
+is written in Backus–Naur form (BNF) notation and is also context-free
+@OWLWebOntologya. The resulting parser for this thesis is roughly linear in time
+as shown in @benchmarks.
 
 // secondary source @langDeterministicTechniquesEfficient1974
 // TODO sekundärquelle durch primärquelle ersetzten
@@ -402,6 +420,15 @@ LSP ..> [owl-ms-language-server]
 ```
 ]
 
+The following sections explain how the parser tree-sitter-owl-ms works, how Rust
+integrates the LSP and the parser, how text documents are synchronized, how
+syntax is highlighted, how hover messages are shown, how diagnostics are
+published to the client, how inlay hints are shown, how auto-completion items
+are generated, what data structures where used and what optimizations where
+important. An LSP feature that did not make the cut was the Go-To Definition
+Request. It works similar to the IRI info map generation mentioned in @hover, by
+querying the syntax tree and searching for the origin frame of an IRI.
+
 == Parsing
 
 A language server needs a good parser and when there is no incremental error
@@ -410,7 +437,7 @@ language server is tree-sitter.
 
 === Why Tree-Sitter
 
-I chose three sitter, because it is an incremental parsing library. This is a
+I chose Tree-sitter, because it is an incremental parsing library. This is a
 must because the OMN files can be very large. Parsing a complete file after only
 changing one character wound be inefficient. In some cases unusable. The parser
 I build takes about 490ms for the initial parse of a 2M file. The parser then
@@ -617,7 +644,7 @@ creates a generated rust data structure for a given grammar, but it has
 limitations like no incremental parsing support and was hence not suitable,
 because this feature was one of the reasons why tree-sitter was chosen.
 
-=== Using the generated parser
+=== Using the generated Parser
 
 There are a number of uses for the generated parser. The simplest is syntax
 highlighting. Because the language server was developed with helix, a
@@ -677,7 +704,7 @@ queries and bindings. The queries are for folds, highlights and indents; the
 bindings are for node and rust. The latter defines a crate/package which the
 language server imports as a submodule and uses as a local dependency.
 
-== LSP specification and Rust implementation
+== LSP Specification and Rust Implementation
 
 Microsoft defines the LSP specification (Version 3.17)@LanguageServerProtocol on
 a GitHub page. The page contains the used base protocol and its RPC methods
@@ -802,7 +829,7 @@ has no need for an internet connection, file system, random generator or time.
 It just needs a stable RPC connection to the client. This connection can be a
 network socket, file socket or in most cases just stdio.
 
-=== The `TextDocumentSyncKind` <sync_kind_incremental>
+=== LSP Text Document Sync Kind <sync_kind_incremental>
 
 According to the specification, the text document can be synchronized in two
 ways. In the first type is `Full`; the entire document is always sent. The
@@ -825,7 +852,7 @@ character insertion or deletion), compared to a full document. This is faster
 than transferring the entire document. You can find an example in
 @did_change_example.
 
-=== `textDocument/didOpen` Notification<section:did_open>
+=== Did Open Notification<section:did_open>
 
 Now let's explore our first language server endpoint. The simplest one after to
 the initialization. The notification is sent from the client to the server to
@@ -898,7 +925,7 @@ buffer/document, while the creation of the rope consumes the original. Then the
 rope and the tree are moved into the document map. This also consumes them, so
 it is a move, not a copy.
 
-=== `textDocument/didChange` Notification <did_change>
+=== Did Change Notification <did_change>
 
 #figure(
   caption: [A typical text document update lifecycle], kind: image,
@@ -966,7 +993,7 @@ The source code of that function can be found in this rust file
   "https://github.com/janekx21/owl-ms-language-server/blob/c39761487c920dcaf65720947ab8e2345e2bec1f/src/main.rs#L273",
 )[owl-ms-language-server/src/main.rs\#L273].
 
-=== `textDocument/didClose` Notification <did_close>
+=== Did Close Notification <did_close>
 
 This notification is sent from the client to the server when a text document got
 closed on the client.
@@ -982,7 +1009,7 @@ The source code of that function can be found in this rust file
   "https://github.com/janekx21/owl-ms-language-server/blob/c39761487c920dcaf65720947ab8e2345e2bec1f/src/main.rs#L421",
 )[owl-ms-language-server/src/main.rs\#L421].
 
-== `textDocument/semanticTokens/full` Request
+== Full Semantic Tokens Request
 
 This request is sent from the client to the server to resolve all semantic token
 in a text document. The parameter contains the URI of the file and the result
@@ -1026,7 +1053,7 @@ The source code of that function can be found in this rust file
   ],
 )
 
-== `textDocument/hover` Request
+== Hover Request <hover>
 
 This request is sent from the client to the server to request hover information
 at a given text document position. The parameter contains the text document
@@ -1097,7 +1124,7 @@ preferences should be adjustable.
   ],
 )<image:hover>
 
-== `textDocument/publishDiagnostics` Push Notification
+== Publish Diagnostics Push Notification
 
 This push notification is sent from the server to the client to push a new set
 of diagnostics.
@@ -1285,7 +1312,7 @@ the OWL Api or maybe a OWL solver application.
   ],
 )<image:multiple_errors>
 
-== `textDocument/inlayHint` Request
+== Inlay Hint Request
 
 This request is sent from the client to the server to request inlay hints in a
 range of a specific text document. The parameter contains the text document
@@ -1344,7 +1371,7 @@ The source code of that function can be found in this rust file
   ],
 )<image:inlay_hints>
 
-== `textDocument/completion` Request
+== Completion Request
 
 This request is sent from the client to the server to request completion items
 under the cursor of a specific text document. The parameter contains the text
@@ -1408,7 +1435,7 @@ The source code of that function can be found in this rust file
   ],
 )
 
-== Used data structures
+== Used Data Structures
 
 Data structures can have advantages and disadvantages. In the case of this work,
 a simple change of the string data structure, inspired by the helix editor,
@@ -1545,14 +1572,14 @@ blocked by the hover request. In an ideal world, one server could handle many
 clients simultaneously. With the Tokio runtime and the rust async/await support,
 it was really easy to add async support.
 
-=== Language server state vs. on promise tree query
+=== Language Server State vs. on Promise Tree Query
 
 The owl-ms-language-server has some obvious internal state like all opened
 documents. Some state is not that obvious and this sections discusses one of
 them. @code:backend contains the complete backend model; witch is more or less
-the servers whole state. It contains the connected client (just one), the reused
-parser, the opened documents and a setting for which position encoding to use
-(some editors don't suppot UTF-8).
+the server's whole state. It contains the connected client (just one), the
+reused parser, the opened documents and a setting for which position encoding to
+use (some editors don't suppot UTF-8).
 
 #figure(caption: "Backend model of the language server")[
 ```rust
@@ -1618,7 +1645,7 @@ The tests should run when pushing to the repository in GitHub by using
 GitHub-Actions. Merging or deploying a version should only be done when every
 automated test succeeds.
 
-=== Query tests in tree-sitter <query-tests>
+=== Query Tests in Tree-Sitter <query-tests>
 
 The tree-sitter-owl2-manchester-syntax repository, that contains the tree-sitter
 grammar that is used by the language server, has its own tests. They can be
@@ -1666,7 +1693,7 @@ understanding of what inputs produce what outputs, the "edges" of a language.
 Tree-sitter also supports testing syntax highlighting, but this project does not
 use it.
 
-=== Integration tests in rust
+=== Integration Tests in Rust
 Integration tests can be found in the rust project of the language server. They
 check the interaction between the implemented language server trait and the
 tree-sitter parser with its grammar. No stubs or mocks were used for the state
@@ -1832,6 +1859,7 @@ server@leimeisterLanguageServerIDE. The full evaluation form can be found in
 
 === Results
 
+The language server was tested, and the form submitted, by four individuals.
 Starting with the background all participants where developing ontologies using
 the Protégé visual editor and 75% of them where using the owl-ms-language-server
 for around 10 minutes; one for around 30 minutes. Everyone described the

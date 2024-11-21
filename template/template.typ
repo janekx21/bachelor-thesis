@@ -110,7 +110,7 @@
     set text(huge, font: "Libertinus Sans")
 
     if h.numbering != none {
-      pagebreak(weak: true)
+      pagebreak(weak: true, to: "odd")
       v(2.3cm)
 
       // Reset figure counters:
