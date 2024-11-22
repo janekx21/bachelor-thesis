@@ -29,11 +29,22 @@ continually tasked with adding new features or modifying existing ones, which
 results in larger and more complex codebases. As complexity grows, programming
 errors become inevitable, potentially leading to undesirable behaviors. Testing
 is one method to identify errors, but testing is expensive and slow. Another
-method is static analysis. Some static analyses, for example, a very simple
+method is static analysis. Some static analyzes, for example, a very simple
 syntax error check, take place much earlier, as they are performed in real time,
 during text based programming. This allows developers to trace the problem and
 correct the issue as early as possible. This process is deeply embedded into the
-field of computer science.
+field of computer science. Artificial intelligence is also becoming increasingly
+widespread, and with it the important field of computer science that deals with
+the exchange of knowledge by means of ontologies. Ontologies are important to
+share common understanding of the structure of information among people or
+software agents. They can also be used to recycle domain knowledge, make domain
+assumptions explicit, separate domain knowledge and operational knowledge and
+analyze the domain knowledge @noyOntologyDevelopment101. The WWW Consortium
+(W3C) defines a standard for this, the Web Ontology Language OWL. OWL comprises
+many languages with different syntaxes and versions. One of these languages is
+Manchester Syntax, which was developed to be better read and written by people
+who also have no background in logic. But a typical workflow for a domain expert
+working on an ontology consists of developing it with a graphical tool.
 
 // TODO etwas über ontologie entwicklung. aber ich weiß darüber nichts
 
@@ -138,8 +149,8 @@ integration tests and benchmarks. Then analyzing and evaluating the results in
 the categories of speed, correctness in @benchmarks and usability in
 @evaluation.
 
-The implementation is not part of this document. It can be found in varous
-Github repositories. This is also the case for this typst document.
+The implementation is not part of this document. It can be found in various
+GitHub repositories. This is also the case for this Typst document.
 
 - Bachelor thesis typst document\
   https://github.com/janekx21/bachelor-thesis
@@ -187,7 +198,7 @@ the LSP. This provides an interface that implements the class "CPAchekerLSP".
 The language server takes the document that was sent via "didSave", analyzes it
 using the CPAchecker and sends back a "publishDiagnostics" notification. The
 whole thing can also be verified via the cloud when configured. The eclipse
-plugin is based on the generic languge client LSP4E. It is installed via an
+plugin is based on the generic language client LSP4E. It is installed via an
 update site. The plugin is built automatically via Apache Maven and Eclipse
 Tycho. Due to conflicts between the OSGi manifest and Maven manifest, a
 workaround had to be implemented. The work used an online survey of potential
@@ -202,7 +213,7 @@ CPAcheckerLSP and the owl-ms-language-server are similar. Both implement a
 language server and both integrate into an IDE with simple plugins. Technically,
 of course, the projects are very different, but the two approaches to source
 code analysis are particularly contrasting. While the OWL language server only
-processes syntax and provides e.g. goto's by means of the syntax tree, the
+processes syntax and provides e.g. Go-To's by means of the syntax tree, the
 CPAchecker language server uses a complete diagnostic tool in the background.
 This makes it more powerful in diagnostics but weaker in the other LSP features.
 It also lacks incremental parsing.
@@ -244,7 +255,7 @@ This chapter will explain programs, libraries, frameworks and techniques that
 are important to this work. You can skip parts that you are familiar with. We
 start with the ontology language this language server will support. Then we go
 over how IDEs used to work and what modern text editors do different. This is
-followed by an explanation of the parser generator ,tree-sitter, that was used.
+followed by an explanation of the parser generator, Tree-Sitter, that was used.
 
 == Owl 2 Manchester Syntax
 
@@ -368,7 +379,7 @@ Parsers are a type of buttom-up parser that can only analyze deterministic
 context-free languages (DCFL) @knuthTranslationLanguagesLeft1965. These
 languages are a proper subset of context-free languages, with the constraint,
 that they can be accepted by a deterministic pushdown automaton
-@hopcroftIntroductionAutomataTheory1979. A context-free languages is a language
+@hopcroftIntroductionAutomataTheory1979. A context-free language is a language
 where a context-free grammar exists that accepts precisely that language. They
 can be classified by the fact that each production rule is in the form
 
@@ -476,8 +487,8 @@ languages, but Rust was used exclusively. The programming language could offer
 me the safety, speed and comfort needed. Some notable alternatives are
 typescript and c++. Rust was chosen over typescript, because of performance.
 Rust compiles to native machine code and runs without a garbage collector while
-typescript first gets transpiled into javascript and then would run on a "virtual
-machine" like javascript engine - e.g. V8. Modern javascript engines are fast
+typescript first gets transpiled into Javascript and then would run on a "virtual
+machine" like Javascript engine - e.g. V8. Modern Javascript engines are fast
 enough and this language server could be ported. One other benefit of typescript
 is the fact that it can be packaged into a Visual Studio Code plugin. The same
 thing will be done using a rust binary, bundling it into the plugin. C++ on the
@@ -502,10 +513,11 @@ it uses parsec and is unfortunately not an incremental parser. Also, it has no
 error recovery functionality that would be sufficient for text editors. There
 are similar reasons to not use the owlapi@OwlcsOwlapi2024 for parsing. Then I
 read about the Happy parser generator, which Haskell uses, and Alex the tool for
-generating lexical analysers. But the complexity of these tools put me off, and
+generating lexical analyzers. But the complexity of these tools put me off, and
 I also didn't know how to connect the different libraries with one another. The
-Protégé project uses the parser of the owlapi which does not do error recovering
-or incremental paring.The package responsible for parsing in the owlapi is `org.semanticweb.owlapi.manchestersyntax.parser`.
+Protégé project uses the parser of the OWL API which does not do error
+recovering or incremental paring. The package responsible for parsing in the OWL
+API is `org.semanticweb.owlapi.manchestersyntax.parser`.
 
 For these reasons a custom parser was written. The next chapter will show how
 this was done.
@@ -515,7 +527,7 @@ this was done.
 Staring with the official reference of the OWL2 Manchester syntax
 @OWLWebOntologya, the rules where transformed into tree-sitter rules, replacing
 the rules with the corresponding tree-sitter ones. For example, the following
-rule was rewirtten from
+rule was rewritten from
 
 ```bnf
 ontologyDocument ::=  { prefixDeclaration } ontology
@@ -624,8 +636,8 @@ annotation_annotated_list: $ => annotated_list($.annotations, $.annotation)
 
 There are limits on how precise your parse should be. The IRI rfc3987
 format@rfc-3987 is part of the OWL2-MS specification but not simple in any way.
-Some specification for the IRI was skiped and put in some regexs that worked for
-the test data but not necessarily for all ontology documents. This had to be
+Some specification for the IRI was skipped and put in some regexs that worked
+for the test data but not necessarily for all ontology documents. This had to be
 done because, for example the IRI specification, defines many small
 non-terminals. It would be time-consuming and impractical to write that grammar
 in full just to get some small benefit in syntax errors.
@@ -1196,7 +1208,7 @@ document.diagnostics.extend(additional_diagnostics);
 The @code:diagnostics_prune_and_extend shows how the `did_change` function first
 removes all old diagnostics for a change range and then inserts newly generated
 ones. The more complex `gen_diagnostics` function takes a changed node and
-generates diagnostics for cust that node.
+generates diagnostics for just that node.
 
 #figure(caption: [`gen_diagnostics` function with complex tree walk])[
 ```rust
@@ -1250,7 +1262,7 @@ be found. Sadly tree-sitter does not directly deliver the information of
 possible nodes and therefore the message will not be correct all the time.
 Future developments could improve this message greatly.
 
-Static node types are created by tree-sitter and are stored in a simple JSON
+Static node types are created by Tree-Sitter and are stored in a simple JSON
 file called `src/node-types.json`. The language server loads them lazy and
 deserializes them using the popular "serde" crate/package. The result is put
 into a dash map for quick lookup when generating diagnostics. The file contains
@@ -1296,7 +1308,7 @@ every node type and the children of that node.
 
 In the example case, that is shown in @image:errors, the syntax error resulting
 from the invalid "????????" part is shown. The message is generated from the
-parent node. In this case it is "Object Propery Frame", found after "inside".
+parent node. In this case it is "Object Property Frame", found after "inside".
 The lookup into the node types returned the possible children and displays them
 in the diagnostics after
 "expected". Because tree-sitter does do error recovery, it is possible to show
@@ -1304,11 +1316,11 @@ every syntax error in a file. Clients can show every error (Called "Problems" in
 @image:multiple_errors) in a source code file. The language server does not show
 errors other than syntax errors like semantic ones. A future version could
 improve diagnostics and show a more complex errors. This could be done by using
-the OWL Api or maybe a OWL solver application.
+the OWL API or maybe a OWL solver application.
 
 #figure(
   image("assets/screenshot_vscode_diagnostics_2.svg", width: 100%), caption: [
-    Syntax error example with overview overview of all problems in a file
+    Syntax error example with overview of all problems in a file
   ],
 )<image:multiple_errors>
 
@@ -1316,7 +1328,7 @@ the OWL Api or maybe a OWL solver application.
 
 This request is sent from the client to the server to request inlay hints in a
 range of a specific text document. The parameter contains the text document
-identifier and a range. This range is typically the view box into a opend file
+identifier and a range. This range is typically the view box into an opend file
 from the client.
 
 ```ts
@@ -1392,13 +1404,13 @@ the cursor position in the syntax tree and creates a cursor there. As long as
 the node is an error, the cursor goes to the parent. To get the possible
 keywords, the function now uses the node type DashMap to look up the current
 node. If found, the possible child nodes are collected here. This is very
-similar to diagnostics, where the same procedure is used to genreate a syntax
+similar to diagnostics, where the same procedure is used to generate a syntax
 error message. Here, the possible nodes become a completion item by turning the
 node kind into a keyword. There is done in a large lookup function called `node_type_to_keyword(tipe: &str) -> Option(String)` (Unfortunately, `type` is
 a reserved keyword, so `tipe` is used here instead). When writing the grammar,
 it was not yet clear that it should have a separate rule for each keyword, so
 unfortunately not all keywords can be used here. This problem must be solved in
-the next version of the grammar.The list of possible IRIs is created based on
+the next version of the grammar. The list of possible IRIs is created based on
 the previously found parent node. If this node is a `simple_iri`, an IRI
 containing the item text is searched for in the `iri_info_map`. Afterward, it
 was noticed that this is not sufficient. On the one hand, it should also be
@@ -1515,7 +1527,7 @@ also need huge amounts of memory for copying operations.
 DashMap@wejdenstalXacrimonDashmap is an implementation of a concurrent
 associative array/hashmap in Rust. DashMap was used for the document map and for
 the IRI info map. It is an alternative to a rust hash map (`std::collections::HashMap`)
-which has a read write mutex (`RwLock<HashMap<K, V>>`). From the api it is very
+which has a read write mutex (`RwLock<HashMap<K, V>>`). From the API it is very
 similar with the difference that it uses async/await syntax and can work in
 parallel. DashMap is very fast as the benchmarks of
 conc-map-bench@wejdenstalXacrimonConcmapbench2024 show.
@@ -1529,7 +1541,7 @@ of the language server did not contain any optimizations. It is unknown if there
 is a possibility to optimize the grammar and reduce parsing time. The Visual
 Studio Code plugin is very light and there is only one obvious optimization.
 Using the build in syntax highlighting instead of the semantic token feature of
-the language server. The following sections deal with asynchrony and server
+the language server. The following sections deal with asynchronicity and server
 state versus on promise query.
 
 === Rust Async with Tokio <tokio>
@@ -1537,7 +1549,7 @@ state versus on promise query.
 In general, language servers are asynchronous in nature. Beginning with the
 client-server architecture and extending into the internal structure. For that
 reason the whole server is set up in a way to not rely on synchronicity. The
-incremental document synchronization uses a versioned sub class of the text
+incremental document synchronization uses a versioned sub-class of the text
 document identifier containing a URI and a version.
 
 ```ts
@@ -1579,7 +1591,7 @@ documents. Some state is not that obvious and this sections discusses one of
 them. @code:backend contains the complete backend model; witch is more or less
 the server's whole state. It contains the connected client (just one), the
 reused parser, the opened documents and a setting for which position encoding to
-use (some editors don't suppot UTF-8).
+use (some editors don't support UTF-8).
 
 #figure(caption: "Backend model of the language server")[
 ```rust
@@ -1594,9 +1606,9 @@ struct Backend {
 
 Let's take a look at a document to see what state it stores. The model of the
 document can be found in @code:document. It contains the syntax tree (no source
-code, just nodes), a rope of the text (wich the syntax tree uses to fetch the
+code, just nodes), a rope of the text (which the syntax tree uses to fetch the
 source code), an incrementing version, current diagnostics and a very odd `iri_info_map`.
-The diagnostics and the IRI informations can be generated from the tree and rope
+The diagnostics and the IRI information can be generated from the tree and rope
 and are therefore repeated information in other words data redundancy.
 
 #figure(caption: "Document model of the language server")[
@@ -1612,7 +1624,7 @@ struct Document {
 ]<code:document>
 
 The question that came up while developing is: "Should all document data come
-from just the tree or can you cache some information?".The additional state
+from just the tree or can you cache some information?". The additional state
 alternative was used, because retrieving distributed information like IRI info
 will cause a tree query to traverse the whole document/workspace. Caching on the
 other hand has the implication of constantly updating the state. The
@@ -1621,7 +1633,7 @@ disadvantage, it's more likely to be bugged than an ad hoc query.
 Yannik Sander discussed the same problem in his work "Design and Implementation
 of the Language Server Protocol for the Nickel
 Language"@sanderDesignImplementationLanguage in Chapter 4.2.3 Code Analysis. He
-calles it lazy and eager analysis.
+calls it "lazy" and "eager" analysis.
 
 = Evaluation <analysis>
 There are two parts to the evaluation. One quantitative and one qualitative. For
@@ -1824,7 +1836,7 @@ required for a change. In this case, no change is even made at all.
 
 It's expected that an incremental parser only parses the changed sections and
 delivers a $O(1)$ runtime complexity on an unchanged source, but the results
-suggest otherwise. This benchmark came to be, because the profiling showd ood
+suggest otherwise. This benchmark came to be, because the profiling showed odd
 timings in small changes.
 
 === Results
@@ -1998,7 +2010,7 @@ easier delivery of the program, changing the rustup toolchain from nightly to
 stable, writing more tests and fixing small bugs. The most necessary features
 are still missing LSP endpoints like displaying all symbols like frames, an
 action commands for creating new frames or supporting more than one file. In
-addition, there are informations that is not yet loaded such as external
+addition, there are information that are not yet loaded such as external
 ontologies that are referenced via full IRIs.
 
 // = Appendix
